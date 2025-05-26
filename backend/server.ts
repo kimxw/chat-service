@@ -12,7 +12,7 @@ const fastify = Fastify();
 fastify.register(fastifyWebsocket);
 
 fastify.register(cors, {
-  origin: ['http://127.0.0.1:54489'],
+  origin: ['http://127.0.0.1:8080'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   credentials: true,
 });
@@ -62,7 +62,7 @@ fastify.get('/ws', { websocket: true }, (conn, req) => {
     console.log('Authenticated user:', user);
 
     conn.socket.on('message', (msg) => {
-      console.log(`💬 Received from ${user.sub}:`, msg.toString());
+      console.log(`Received from ${user.sub}:`, msg.toString());
     });
 
   } catch (err) {
@@ -71,34 +71,54 @@ fastify.get('/ws', { websocket: true }, (conn, req) => {
 });
 
 fastify.post('/register', async (request, reply) => {
-  const { username, email, password, role } = request.body as {
-    username: string;
-    email: string;
-    password: string;
-    role: string;
-  };
+  try {
+    console.log("register pressed")
+    const { username, email, password, role } = request.body as {
+      username: string;
+      email: string;
+      password: string;
+      role: string;
+    };
 
-  // Check if user exists
-  const existingUser = await prisma.user.findUnique({ where: { username } });
-  if (existingUser) {
-    return reply.status(400).send({ error: 'Username already taken' });
+    console.log("object created")
+
+    const existingUser = await prisma.user.findUnique({ where: { username } });
+    if (existingUser) {
+      return reply.status(400).send({ error: 'Username already taken' });
+    }
+
+    console.log("new user valid")
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    console.log("password hashed")
+
+    const newUser = await prisma.user.create({
+      data: { username, email, password: hashedPassword, role },
+    });
+
+    console.log("new user created")
+
+    reply.send({ id: newUser.id.toString(), username: newUser.username, email: newUser.email, role: newUser.role });
+
+    console.log("reply sent")
+  } catch (error) {
+    console.error("Error during registration:", error);
+    reply.status(500).send({ error: 'Internal Server Error', details: error instanceof Error ? error.message : error });
   }
-
-  const hashedPassword = await bcrypt.hash(password, 10);
-
-  const newUser = await prisma.user.create({
-    data: { username, email, password: hashedPassword, role },
-  });
-
-  reply.send({ id: newUser.id, username: newUser.username, email: newUser.email, role: newUser.role });
 });
+
 
 fastify.post('/register-business', async (request, reply) => {
   const { name } = request.body as { name: string };
   const business = await prisma.business.create({
     data: { name },
   });
-  reply.send(business);
+  reply.send({
+  ...business,
+  id: business.id.toString(),
+}); //because of bigInt serialisation
+
 });
 
 fastify.post('/register-agent', async (request, reply) => {
