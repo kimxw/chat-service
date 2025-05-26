@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head><title>Register Agent</title></head>
+<body>
+  <h1>Register Agent</h1>
+  <form id="registerAgentForm">
+    <input name="username" placeholder="Username" required />
+    <input name="email" type="email" placeholder="Email" required />
+    <input name="password" type="password" placeholder="Password" required />
+    <input name="businessId" type="number" placeholder="Business ID" required />
+    <button type="submit">Register Agent</button>
+  </form>
+
+  <script>
+    document.getElementById('registerAgentForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const username = form.username.value;
+      const email = form.email.value;
+      const password = form.password.value;
+      const businessId = form.businessId.value;
+
+      const resp = await fetch('http://localhost:3001/register-agent', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, email, password, businessId }),
+      });
+
+      if (!resp.ok) {
+        const error = await resp.json();
+        alert('Failed to register agent: ' + (error.error || resp.statusText));
+        return;
+      }
+
+      alert('Agent registered successfully!');
+      form.reset();
+    };
+  </script>
+</body>
+</html>
