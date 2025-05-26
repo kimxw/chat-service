@@ -93,6 +93,39 @@ fastify.post('/register', async (request, reply) => {
   reply.send({ id: newUser.id, username: newUser.username, email: newUser.email, role: newUser.role });
 });
 
+fastify.post('/register-business', async (request, reply) => {
+  const { name } = request.body as { name: string };
+  const business = await prisma.business.create({
+    data: { name },
+  });
+  reply.send(business);
+});
+
+fastify.post('/register-agent', async (request, reply) => {
+  const { username, email, password, businessId } = request.body as {
+  username: string;
+  email: string;
+  password: string;
+  businessId: string;  // json doesnt handle bigint natively!
+};
+
+  const parsedBusinessId = BigInt(businessId);
+  const hashedPassword = await bcrypt.hash(password, 10);
+
+  const user = await prisma.user.create({
+    data: {
+      username,
+      email,
+      password: hashedPassword,
+      role: 'AGENT',
+      businessId: parsedBusinessId,
+    },
+  });
+
+  reply.send({ id: user.id, username: user.username, email: user.email });
+});
+
+
 // Start server
 fastify.listen({ port: 3001 }, (err, address) => {
   if (err) throw err;
