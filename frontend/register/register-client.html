@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html>
+<head><title>Register Client</title></head>
+<body>
+  <h1>Register Client</h1>
+  <form id="registerClientForm">
+    <input name="username" placeholder="Username" required />
+    <input name="email" type="email" placeholder="Email" required />
+    <input name="password" type="password" placeholder="Password" required />
+    <button type="submit">Register Client</button>
+  </form>
+
+  <script>
+    document.getElementById('registerClientForm').onsubmit = async (e) => {
+      e.preventDefault();
+      const form = e.target;
+      const username = form.username.value;
+      const email = form.email.value;
+      const password = form.password.value;
+
+      const resp = await fetch('http://localhost:3001/register', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({ username, email, password, role: 'CLIENT' }),
+      });
+
+      console.log("Response status:", resp.status);
+      console.log("Response status text:", resp.statusText);
+      const text = await resp.text();
+      console.log("Response body text:", text);
+
+      if (!resp.ok) {
+        alert('Failed to register client')
+        return;
+      }
+
+      alert('Client registered successfully!');
+      form.reset();
+    };
+  </script>
+</body>
+</html>
