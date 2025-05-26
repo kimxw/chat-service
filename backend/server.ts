@@ -40,7 +40,7 @@ fastify.post('/login', async (request, reply) => {
   }
 
   const token = jwt.sign(
-    { sub: user.id, role: user.role, username: user.username },
+    { id: user.id.toString(), role: user.role, username: user.username },
     process.env.JWT_SECRET!,
     { expiresIn: '1h' }
   );
@@ -132,7 +132,7 @@ fastify.post('/register-agent', async (request, reply) => {
   const parsedBusinessId = BigInt(businessId);
   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const user = await prisma.user.create({
+  const newUser = await prisma.user.create({
     data: {
       username,
       email,
@@ -142,7 +142,7 @@ fastify.post('/register-agent', async (request, reply) => {
     },
   });
 
-  reply.send({ id: user.id, username: user.username, email: user.email });
+  reply.send({ id: newUser.id.toString(), username: newUser.username, email: newUser.email });
 });
 
 
