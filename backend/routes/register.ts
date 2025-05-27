@@ -1,14 +1,15 @@
 import { FastifyInstance } from "fastify";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 // import * as dotenv from 'dotenv';
 // dotenv.config();
 
 import prisma from "../utils/db";
+const bcrypt = require("bcrypt");
 
 export async function registerRoutes(fastify: FastifyInstance) {
   fastify.post("/register", async (request, reply) => {
     try {
-      console.log("register pressed");
+      //   console.log("register pressed");
       const { username, email, password, role } = request.body as {
         username: string;
         email: string;
@@ -16,7 +17,7 @@ export async function registerRoutes(fastify: FastifyInstance) {
         role: string;
       };
 
-      console.log("object created");
+      //   console.log("object created");
 
       const existingUser = await prisma.user.findUnique({
         where: { username },
@@ -25,17 +26,17 @@ export async function registerRoutes(fastify: FastifyInstance) {
         return reply.status(400).send({ error: "Username already taken" });
       }
 
-      console.log("new user valid");
+      //   console.log("new user valid");
 
       const hashedPassword = await bcrypt.hash(password, 10);
 
-      console.log("password hashed");
+      //   console.log("password hashed");
 
       const newUser = await prisma.user.create({
         data: { username, email, password: hashedPassword, role },
       });
 
-      console.log("new user created");
+      //   console.log("new user created");
 
       reply.send({
         id: newUser.id.toString(),
@@ -44,15 +45,13 @@ export async function registerRoutes(fastify: FastifyInstance) {
         role: newUser.role,
       });
 
-      console.log("reply sent");
+      //   console.log("reply sent");
     } catch (error) {
       console.error("Error during registration:", error);
-      reply
-        .status(500)
-        .send({
-          error: "Internal Server Error",
-          details: error instanceof Error ? error.message : error,
-        });
+      reply.status(500).send({
+        error: "Internal Server Error",
+        details: error instanceof Error ? error.message : error,
+      });
     }
   });
 
