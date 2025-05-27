@@ -2,8 +2,6 @@ import Fastify from "fastify";
 import jwt from "jsonwebtoken";
 import { authRoutes } from "../backend/routes/auth";
 import { PrismaClient } from "@prisma/client";
-const dotenv = require("dotenv");
-dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || ".env" });
 
 const prisma = new PrismaClient();
 const supertest = require("supertest");

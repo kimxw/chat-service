@@ -2,8 +2,7 @@ import Fastify from "fastify";
 import { registerRoutes } from "../backend/routes/register";
 import { PrismaClient } from "@prisma/client";
 // import bcrypt from 'bcrypt';
-const dotenv = require("dotenv");
-dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || ".env" });
+
 
 const prisma = new PrismaClient();
 const supertest = require("supertest"); //rmb supertest uses commonjs export!!
