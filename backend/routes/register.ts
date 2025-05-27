@@ -1,9 +1,10 @@
 import { FastifyInstance } from "fastify";
-import bcrypt from "bcrypt";
+// import bcrypt from "bcrypt";
 // import * as dotenv from 'dotenv';
 // dotenv.config();
 
 import prisma from "../utils/db";
+const bcrypt = require('bcrypt');
 
 export async function registerRoutes(fastify: FastifyInstance) {
   fastify.post("/register", async (request, reply) => {
