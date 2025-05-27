@@ -4,7 +4,6 @@ export const createClientConversation = async (
   businessId: bigint,
   userId: bigint,
 ) => {
-  // Check if the user is a client (optional strictness)
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
   if (user.role !== "CLIENT")

@@ -2,6 +2,7 @@ import { FastifyInstance } from "fastify";
 import { createClientConversation } from "../services/client-service";
 import { verifyJWT } from "../utils/verifyJWT";
 import serialiseBigInts from "../utils/serialiser";
+import prisma from "../utils/db";
 
 export async function clientChatRoutes(fastify: FastifyInstance) {
   fastify.post("/getClientConversations", async (request, reply) => {
@@ -29,12 +30,23 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
     console.log("calling function1");
     try {
       const { businessId } = request.body as { businessId: string };
-
-      if (!businessId)
+      if (!businessId) {
         return reply.code(400).send({ message: "Missing businessId" });
-
+      }
+      const parsedBusinessId = BigInt(businessId);
+      const business = await prisma.business.findUnique({
+        where: { id: parsedBusinessId },
+      });
+      if (!business) {
+        return reply
+          .status(400)
+          .send({ error: `Business with id ${businessId} does not exist` });
+      }
+      
+      console.log("calling function1");
       const { userId } = verifyJWT(request, reply);
-
+      console.log("calling function1");
+      
       const conversation = await createClientConversation(
         BigInt(businessId),
         userId,
