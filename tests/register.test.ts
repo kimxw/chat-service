@@ -79,10 +79,12 @@ describe("Auth endpoints", () => {
   });
 
   it("should register a business", async () => {
-    const response = await supertest(fastify.server).post("/register-business").send({
-      name: "Test Business",
-    });
-    
+    const response = await supertest(fastify.server)
+      .post("/register-business")
+      .send({
+        name: "Test Business",
+      });
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("id");
     expect(response.body.name).toBe("Test Business");
@@ -107,5 +109,4 @@ describe("Auth endpoints", () => {
     expect(response.body.username).toBe("agentuser");
     expect(response.body.email).toBe("agent@example.com");
   });
-
 });
