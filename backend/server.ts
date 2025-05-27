@@ -31,7 +31,7 @@ fastify.get("/ws", { websocket: true }, (conn, req) => {
 
     const token = authHeader.split(" ")[1];
     const user = jwt.verify(token, process.env.JWT_SECRET!);
-    console.log("Authenticated user:", user);
+    // console.log("Authenticated user:", user);
 
     conn.socket.on("message", (msg) => {
       console.log(`Received from ${user.sub}:`, msg.toString());
