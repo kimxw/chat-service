@@ -21,97 +21,123 @@
     .error {
       color: red;
     }
+    input, button {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 300px;
+    }
   </style>
 </head>
 <body>
   <h1>Conversations</h1>
+
   <form id="create-convo-form">
+    <input type="text" id="businessId" placeholder="Enter Business ID" />
     <button type="submit">Create Conversation</button>
   </form>
 
   <div id="results"></div>
 
-<script>
-  document.addEventListener("DOMContentLoaded", () => {
-    const resultsDiv = document.getElementById("results");
-    const conversations = []; // Store the conversation list in the frontend
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const resultsDiv = document.getElementById("results");
+      const conversations = [];
 
-    // Helper to render the entire conversation list
-    function renderConversations() {
-      resultsDiv.innerHTML = ""; // Clear previous
-
-      if (conversations.length === 0) {
-        resultsDiv.innerHTML = "<p>No conversations yet. Click above to create one.</p>";
-        return;
-      }
-
-      conversations.forEach(convo => {
-        const container = document.createElement("div");
-        container.className = "conversation-card";
-        container.innerHTML = `
-          <p><strong>Conversation ID:</strong> ${convo.id}</p>
-          <p><strong>Business:</strong> ${convo.business}</p>
-          <p><strong>Created At:</strong> ${convo.createdAt}</p>
-        `;
-        resultsDiv.appendChild(container);
-      });
-    }
-
-    // Handle form submission
-    document.getElementById("create-convo-form").addEventListener("submit", async (e) => {
-      e.preventDefault(); // Prevent page reload
-
-      try {
-        const resp = await fetch('http://localhost:3001/createConversation', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}), // Send empty body for now
-        });
-
-        if (!resp.ok) {
-          const error = await resp.text();
-          resultsDiv.innerHTML = `<p class="error">Error: ${error}</p>`;
+      // Helper to render the conversation list
+      function renderConversations() {
+        resultsDiv.innerHTML = "";
+        if (conversations.length === 0) {
+          resultsDiv.innerHTML = "<p>No conversations yet. Click above to create one.</p>";
           return;
         }
 
-        const data = await resp.json();
+        conversations.forEach(convo => {
+          const container = document.createElement("div");
+          container.className = "conversation-card";
+          container.innerHTML = `
+            <p><strong>Conversation ID:</strong> ${convo.id}</p>
+            <p><strong>Business ID:</strong> ${convo.businessId}</p>
+            <p><strong>Created At:</strong> ${convo.createdAt}</p>
+          `;
+          resultsDiv.appendChild(container);
+        });
+      }
 
-        if (!data.conversation) {
-          resultsDiv.innerHTML = `<p class="error">No conversation created.</p>`;
+      // Create Conversation
+      document.getElementById("create-convo-form").addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const businessId = document.getElementById("businessId").value;
+        const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+
+        if (!token) {
+          alert("JWT token is required.");
           return;
         }
 
-        // re-render array w new conversation
-        conversations.push(data.conversation);
-        renderConversations();
-      } catch (err) {
-        resultsDiv.innerHTML = `<p class="error">Network Error: ${err}</p>`;
-      }
-    });
+        if (!businessId) {
+          alert("Please enter a Business ID.");
+          return;
+        }
 
-    async function loadExistingConversations() {
-      try {
-        const resp = await fetch('http://localhost:3001/conversations', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({}),
-        });
+        try {
+          const resp = await fetch('http://localhost:3001/createClientConversation', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ businessId }),
+          });
 
-        if (!resp.ok) return;
+          const data = await resp.json();
 
-        const data = await resp.json();
-        if (Array.isArray(data.conversations)) {
-          conversations.push(...data.conversations);
+          if (!resp.ok) {
+                console.error('Error response:', data);
+                alert(`Error: ${data.message || data.error || resp.statusText}`);
+                return;
+            }
+
+          conversations.push(data.conversation);
           renderConversations();
+        } catch (err) {
+          console.error("Error creating conversation:", err);
         }
-      } catch (err) {
-        console.error("Error loading conversations:", err);
+      });
+
+      // Load Existing Conversations
+      async function loadExistingConversations() {
+        const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+
+        if (!token) {
+          alert("JWT token is required.");
+          return;
+        }
+
+        try {
+          const resp = await fetch('http://localhost:3001/getClientConversations', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({}),
+          });
+
+          const data = await resp.json();
+
+          if (Array.isArray(data.conversations)) {
+            conversations.push(...data.conversations);
+            renderConversations();
+          } else {
+            console.error("Unexpected response:", data);
+          }
+        } catch (err) {
+          console.error("Error loading conversations:", err);
+        }
       }
-    }
 
-    loadExistingConversations();
-  });
-</script>
-
+      loadExistingConversations();
+    });
+  </script>
 </body>
 </html>
