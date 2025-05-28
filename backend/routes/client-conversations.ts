@@ -27,7 +27,6 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
   });
 
   fastify.post("/createClientConversation", async (request, reply) => {
-    console.log("calling function1");
     try {
       const { businessId } = request.body as { businessId: string };
       if (!businessId) {
@@ -43,9 +42,7 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
           .send({ error: `Business with id ${businessId} does not exist` });
       }
       
-      console.log("calling function1");
       const { userId } = verifyJWT(request, reply);
-      console.log("calling function1");
       
       const conversation = await createClientConversation(
         BigInt(businessId),
