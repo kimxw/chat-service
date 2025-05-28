@@ -1,32 +1,26 @@
 import { FastifyInstance } from "fastify";
-import { createClientConversation } from "../services/client-service";
+import { createClientChat, getClientChats } from "../services/client-service";
 import { verifyJWT } from "../utils/verifyJWT";
 import serialiseBigInts from "../utils/serialiser";
 import prisma from "../utils/db";
 
 export async function clientChatRoutes(fastify: FastifyInstance) {
-  fastify.post("/getClientConversations", async (request, reply) => {
-    console.log("Received POST /conversations with body:", request.body);
+  fastify.get("/getClientChats", async (request, reply) => {
+    const { userId } = verifyJWT(request, reply);
+      
+    const userAsParticipantList = await getClientChats(  //conversations is trype array
+      userId,
+    );
+
+    const serialisedUserAsParticipantList = userAsParticipantList.map(serialiseBigInts)
 
     return reply.send({
       success: true,
-      message: "Dummy conversations response",
-      conversations: [
-        {
-          id: "1",
-          business: "Business A",
-          createdAt: new Date().toISOString(),
-        },
-        {
-          id: "2",
-          business: "Business B",
-          createdAt: new Date().toISOString(),
-        },
-      ],
+      userAsParticipantList: serialisedUserAsParticipantList,
     });
   });
 
-  fastify.post("/createClientConversation", async (request, reply) => {
+  fastify.post("/createClientChat", async (request, reply) => {
     try {
       const { businessId } = request.body as { businessId: string };
       if (!businessId) {
@@ -44,14 +38,14 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
       
       const { userId } = verifyJWT(request, reply);
       
-      const conversation = await createClientConversation(
+      const newParticipantEntry = await createClientChat(
         BigInt(businessId),
         userId,
       );
 
-      const serializedConversation = serialiseBigInts(conversation);
+      const serializedNewParticipantEntry = serialiseBigInts(newParticipantEntry);
 
-      reply.send({ conversation: serializedConversation });
+      reply.send({ newParticipantEntry: serializedNewParticipantEntry });
     } catch (err: any) {
       console.error(err);
       reply.code(500).send("Internal server error RAAA");

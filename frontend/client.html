@@ -46,103 +46,106 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-      const resultsDiv = document.getElementById("results");
-      const conversations = [];
+    const resultsDiv = document.getElementById("results");
+    const conversations = [];
 
-      // Helper to render the conversation list
-      function renderConversations() {
-        resultsDiv.innerHTML = "";
-        if (conversations.length === 0) {
-          resultsDiv.innerHTML = "<p>No conversations yet. Click above to create one.</p>";
-          return;
-        }
-
-        conversations.forEach(convo => {
-          const container = document.createElement("div");
-          container.className = "conversation-card";
-          container.innerHTML = `
-            <p><strong>Conversation ID:</strong> ${convo.id}</p>
-            <p><strong>Business ID:</strong> ${convo.businessId}</p>
-            <p><strong>Created At:</strong> ${convo.createdAt}</p>
-          `;
-          resultsDiv.appendChild(container);
-        });
+    function renderConversations() {
+      resultsDiv.innerHTML = "";
+      if (conversations.length === 0) {
+        resultsDiv.innerHTML = "<p>No conversations yet. Click above to create one.</p>";
+        return;
       }
 
-      // Create Conversation
-      document.getElementById("create-convo-form").addEventListener("submit", async (e) => {
-        e.preventDefault();
-        const businessId = document.getElementById("businessId").value;
-        const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
-
-        if (!token) {
-          alert("JWT token is required.");
-          window.location.href = "/";
-          return;
-        }
-
-        if (!businessId) {
-          alert("Please enter a Business ID.");
-          return;
-        }
-
-        try {
-          const resp = await fetch('http://localhost:3001/createClientConversation', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({ businessId }),
-          });
-
-          const data = await resp.json();
-
-          if (!resp.ok) {
-                console.error('Error response:', data);
-                alert(`Error: ${data.message || data.error || resp.statusText}`);
-                return;
-            }
-
-          conversations.push(data.conversation);
-          renderConversations();
-        } catch (err) {
-          console.error("Error creating conversation:", err);
-        }
+      conversations.forEach(participant => {
+        // participant.conversation contains the actual conversation data
+        const convo = participant.conversation;
+        const container = document.createElement("div");
+        container.className = "conversation-card";
+        container.innerHTML = `
+          <p><strong>Conversation ID:</strong> ${convo.id}</p>
+          <p><strong>Business ID:</strong> ${convo.businessId}</p>
+          <p><strong>Type:</strong> ${convo.type}</p>
+          <p><strong>Created At:</strong> ${new Date(convo.createdAt).toLocaleString()}</p>
+          <p><strong>Your Role:</strong> ${participant.role}</p>
+        `;
+        resultsDiv.appendChild(container);
       });
+    }
 
-      // Load Existing Conversations
-      async function loadExistingConversations() {
-        const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+    // Create Conversation
+    document.getElementById("create-convo-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const businessId = document.getElementById("businessId").value;
+      const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
 
-        if (!token) {
-          alert("JWT token is required.");
-          window.location.href = "/";
+      if (!token) {
+        alert("JWT token is required.");
+        window.location.href = "/";
+        return;
+      }
+
+      if (!businessId) {
+        alert("Please enter a Business ID.");
+        return;
+      }
+
+      try {
+        const resp = await fetch('http://localhost:3001/createClientChat', {  // updated URL
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+          body: JSON.stringify({ businessId }),
+        });
+
+        const data = await resp.json();
+
+        if (!resp.ok) {
+          console.error('Error response:', data);
+          alert(`Error: ${data.message || data.error || resp.statusText}`);
           return;
         }
 
-        try {
-          const resp = await fetch('http://localhost:3001/getClientConversations', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-            body: JSON.stringify({}),
-          });
-
-          const data = await resp.json();
-
-          if (Array.isArray(data.conversations)) {
-            conversations.push(...data.conversations);
-            renderConversations();
-          } else {
-            console.error("Unexpected response:", data);
-          }
-        } catch (err) {
-          console.error("Error loading conversations:", err);
-        }
+        // Add the new participant entry which contains the conversation info
+        conversations.push(data.newParticipantEntry);
+        renderConversations();
+      } catch (err) {
+        console.error("Error creating conversation:", err);
       }
+    });
+
+    // Load Existing Conversations
+    async function loadExistingConversations() {
+      const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+
+      if (!token) {
+        alert("JWT token is required.");
+        window.location.href = "/";
+        return;
+      }
+
+      try {
+        const resp = await fetch('http://localhost:3001/getClientChats', {  // updated URL
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await resp.json();
+
+        if (Array.isArray(data.userAsParticipantList)) {
+          conversations.push(...data.userAsParticipantList);
+          renderConversations();
+        } else {
+          console.error("Unexpected response:", data);
+        }
+      } catch (err) {
+        console.error("Error loading conversations:", err);
+      }
+    }
 
       // Fetch user details and update UI
       async function loadUserDetails() {
