@@ -30,6 +30,12 @@
 </head>
 <body>
   <h1>Conversations</h1>
+  <div id="user-info">
+    <p><strong>User:</strong> <span id="username">Loading...</span></p>
+    <p><strong>Role:</strong> <span id="role">Loading...</span></p>
+    <p><strong>Business:</strong> <span id="business">Loading...</span></p>
+  </div>
+
 
   <form id="create-convo-form">
     <input type="text" id="businessId" placeholder="Enter Business ID" />
@@ -71,6 +77,7 @@
 
         if (!token) {
           alert("JWT token is required.");
+          window.location.href = "/";
           return;
         }
 
@@ -110,6 +117,7 @@
 
         if (!token) {
           alert("JWT token is required.");
+          window.location.href = "/";
           return;
         }
 
@@ -136,6 +144,44 @@
         }
       }
 
+      // Fetch user details and update UI
+      async function loadUserDetails() {
+        const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+
+        if (!token) {
+          alert("JWT token is required.");
+          window.location.href = "/";
+          return;
+        }
+
+        try {
+          const resp = await fetch('http://localhost:3001/getUserDetails', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            console.error("Error fetching user details:", data);
+            alert(`Error: ${data.message || data.error || resp.statusText}`);
+            return;
+          }
+
+          // Update UI
+          document.getElementById("username").textContent = data.username;
+          document.getElementById("role").textContent = data.role;
+          document.getElementById("business").textContent = data.businessName;
+
+        } catch (err) {
+          console.error("Error loading user details:", err);
+        }
+      }
+
+      loadUserDetails();
       loadExistingConversations();
     });
   </script>
