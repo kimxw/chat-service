@@ -1,5 +1,5 @@
 import Fastify from "fastify";
-import { registerRoutes } from "../backend/routes/register";
+import { registerRoutes } from "../../backend/routes/register";
 import { PrismaClient } from "@prisma/client";
 // import bcrypt from 'bcrypt';
 
@@ -22,11 +22,23 @@ describe("Auth endpoints", () => {
   });
 
   beforeEach(async () => {
-    await prisma.user.deleteMany();
+    await prisma.$transaction([
+      prisma.message.deleteMany(),
+      prisma.participant.deleteMany(),
+      prisma.conversation.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.business.deleteMany(),
+    ]);
   });
 
   afterEach(async () => {
-    await prisma.user.deleteMany();
+    await prisma.$transaction([
+      prisma.message.deleteMany(),
+      prisma.participant.deleteMany(),
+      prisma.conversation.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.business.deleteMany(),
+    ]);
   });
 
   it("should register a new user successfully", async () => {

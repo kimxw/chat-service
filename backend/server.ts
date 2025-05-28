@@ -4,7 +4,7 @@ import fastifyWebsocket from "@fastify/websocket";
 import jwt from "jsonwebtoken";
 import { authRoutes } from "./routes/auth";
 import { registerRoutes } from "./routes/register";
-import { clientChatRoutes } from "./routes/client-conversations";
+import { clientChatRoutes } from "./routes/client-chats";
 import * as dotenv from "dotenv";
 
 dotenv.config();
