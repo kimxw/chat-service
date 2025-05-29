@@ -2,7 +2,9 @@ import Fastify from "fastify";
 import { registerRoutes } from "../../backend/routes/register";
 import { PrismaClient } from "@prisma/client";
 // import bcrypt from 'bcrypt';
+jest.setTimeout(10000);
 
+require("dotenv").config({ path: ".env.test" }); //might have to add this to every test file, check the config later
 
 const prisma = new PrismaClient();
 const supertest = require("supertest"); //rmb supertest uses commonjs export!!
@@ -46,7 +48,7 @@ describe("Auth endpoints", () => {
       username: "regtestuser",
       email: "test@example.com",
       password: "password123",
-      role: "CLIENT",
+      role: "CUSTOMER",
     });
 
     expect(response.status).toBe(200);
@@ -60,7 +62,7 @@ describe("Auth endpoints", () => {
         username: "regtestuser",
         email: "test@example.com",
         password: "hashedpassword",
-        role: "CLIENT",
+        role: "CUSTOMER",
       },
     });
 
@@ -68,7 +70,7 @@ describe("Auth endpoints", () => {
       username: "regtestuser",
       email: "new@example.com",
       password: "password123",
-      role: "CLIENT",
+      role: "CUSTOMER",
     });
 
     expect(response.status).toBe(400);

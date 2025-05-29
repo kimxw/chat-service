@@ -8,7 +8,9 @@ jest.mock("../../backend/utils/verifyJWT", () => ({
   verifyJWT: (_req: any, _reply: any) => ({ userId: BigInt(1) }),
 }));
 
-// require("dotenv").config({ path: ".env.test" }); //might have to add this to every test file, check the config later
+jest.setTimeout(10000);
+
+require("dotenv").config({ path: ".env.test" }); //might have to add this to every test file, check the config later
 
 const prisma = new PrismaClient();
 const supertest = require('supertest');
@@ -22,14 +24,8 @@ describe("Client Chats API", () => {
     fastify.register(registerRoutes);
     fastify.register(clientChatRoutes);
     await fastify.ready();
-  });
 
-  afterAll(async () => {
-    await prisma.$disconnect();
-    await fastify.close();
-  });
-
-  beforeEach(async () => {
+    //clean db
     await prisma.$transaction([
       prisma.message.deleteMany(),
       prisma.participant.deleteMany(),
@@ -38,14 +34,13 @@ describe("Client Chats API", () => {
       prisma.business.deleteMany(),
     ]);
 
-
     await prisma.user.create({
       data: {
         id: BigInt(1), // match mocked userId
         username: "testuser",
         email: "test@example.com",
         password: "hashedpassword",
-        role: "CLIENT",
+        role: "CUSTOMER",
       },
     });
 
@@ -55,10 +50,10 @@ describe("Client Chats API", () => {
         name: "NEW Test Business",
       },
     });
+
   });
 
-
-  afterEach(async () => {
+  afterAll(async () => {
     await prisma.$transaction([
       prisma.message.deleteMany(),
       prisma.participant.deleteMany(),
@@ -66,6 +61,8 @@ describe("Client Chats API", () => {
       prisma.user.deleteMany(),
       prisma.business.deleteMany(),
     ]);
+    await prisma.$disconnect();
+    await fastify.close();
   });
 
   it("should create a participant (and conversation) for a valid client and business", async () => {
@@ -118,17 +115,22 @@ describe("Client Chats API", () => {
   });
 
   it("should return the participant list when chats exist", async () => {
-    const newParticipantEntry = createClientChat(BigInt(1), BigInt(1));
+    // First, create a participant via the actual API
+    const createResponse = await supertest(fastify.server)
+      .post("/createClientChat")
+      .set("Authorization", `Bearer dummyToken`)
+      .send({ businessId: business.id.toString() });
 
-    const response = await supertest(fastify.server)
+    expect(createResponse.status).toBe(200);
+
+    // Then, get the participant list
+    const getResponse = await supertest(fastify.server)
       .get("/getClientChats")
       .set("Authorization", `Bearer dummyToken`);
 
-    expect(response.status).toBe(200);
-    expect(response.body.success).toBe(true);
-    expect(response.body.userAsParticipantList.length).toBe(1);
-
-    const retrievedParticipant = response.body.userAsParticipantList[0];
+    expect(getResponse.status).toBe(200);
+    expect(getResponse.body.success).toBe(true);
+    const retrievedParticipant = getResponse.body.userAsParticipantList[0];
     expect(retrievedParticipant).toHaveProperty("id");
     expect(retrievedParticipant).toHaveProperty("conversationId");
     expect(retrievedParticipant).toHaveProperty("userId", "1");

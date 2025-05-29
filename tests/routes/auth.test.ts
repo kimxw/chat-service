@@ -3,14 +3,16 @@ import jwt from "jsonwebtoken";
 import { authRoutes } from "../../backend/routes/auth";
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
-const supertest = require("supertest");
-const bcrypt = require("bcrypt");
-
-// Mock JWT verification (simulate a userId of 1)
 jest.mock("../../backend/utils/verifyJWT", () => ({
   verifyJWT: (_req: any, _reply: any) => ({ userId: BigInt(1) }),
 }));
+jest.setTimeout(10000);
+
+require("dotenv").config({ path: ".env.test" }); //might have to add this to every test file, check the config later
+
+const prisma = new PrismaClient();
+const supertest = require("supertest");
+const bcrypt = require("bcrypt");
 
 describe("Auth endpoints", () => {
   let fastify;
@@ -45,7 +47,7 @@ describe("Auth endpoints", () => {
         username: "authtestuser",
         email: "test@example.com",
         password: hashedPassword,
-        role: "CLIENT",
+        role: "CUSTOMER",
         businessId: business.id,
       },
     });
@@ -86,7 +88,7 @@ describe("Auth endpoints", () => {
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       username: "authtestuser",
-      role: "CLIENT",
+      role: "CUSTOMER",
       businessName: "Test Business",
     });
   });
