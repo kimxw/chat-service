@@ -1,4 +1,5 @@
 import prisma from "../utils/db";
+import { addAgentToChat } from "./agent-services";
 
 export const createClientChat = async (
   businessId: bigint,
@@ -6,8 +7,8 @@ export const createClientChat = async (
 ) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
-  if (user.role !== "CLIENT")
-    throw new Error("Only CLIENT users can create conversations");
+  if (user.role !== "CUSTOMER")
+    throw new Error("Only CUSTOMER users can create conversations");
 
   // 1) Create conversation
   const conversation = await prisma.conversation.create({
@@ -29,6 +30,10 @@ export const createClientChat = async (
     },
   });
 
+  // 3) make all agents from that business participiants in this conversation
+  await addAgentToChat(businessId, conversation.id);
+  
+
   return participant;
 };
 
@@ -40,8 +45,8 @@ export const getClientChats = async (
 ) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
-  if (user.role !== "CLIENT")
-    throw new Error("Only CLIENT users can create conversations");
+  if (user.role !== "CUSTOMER")
+    throw new Error("Unexpected error. Current user is not of role CUSTOMER");
 
   const participants = await prisma.participant.findMany({
     where: { userId },
