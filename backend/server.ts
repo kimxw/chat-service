@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import { authRoutes } from "./routes/auth";
 import { registerRoutes } from "./routes/register";
 import { clientChatRoutes } from "./routes/client-chats";
+import { agentChatRoutes } from "./routes/agent-chats";
 import * as dotenv from "dotenv";
 
 dotenv.config();
@@ -21,6 +22,7 @@ fastify.register(cors, {
 authRoutes(fastify);
 registerRoutes(fastify);
 clientChatRoutes(fastify);
+agentChatRoutes(fastify);
 
 // WebSocket route
 fastify.get("/ws", { websocket: true }, (conn, req) => {
