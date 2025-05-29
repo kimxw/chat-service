@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import { verifyJWT } from "../utils/verifyJWT";
 // import bcrypt from "bcrypt";
 // import * as dotenv from 'dotenv';
 // dotenv.config();
@@ -47,4 +48,27 @@ export async function authRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ error: "Token generation failed" });
     }
   });
+
+  fastify.get("/getUserDetails", async (request, reply) => {
+    try {
+      const { userId } = verifyJWT(request, reply);
+
+      const user = await prisma.user.findUnique({ where: { id: userId } });
+      if (!user) {
+        reply.code(404).send({ error: "User not found" });
+        return;
+      }
+
+      const business = user.businessId
+      ? await prisma.business.findUnique({ where: { id: user.businessId } })
+      : null;
+
+
+      reply.send({ username: user.username, role: user.role, businessName: business?.name });
+    } catch (err: any) {
+      console.error(err);
+      reply.code(500).send({ error: "Internal server error" });
+    }
+  });
+
 }

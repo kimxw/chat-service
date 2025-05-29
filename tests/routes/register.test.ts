@@ -1,9 +1,10 @@
 import Fastify from "fastify";
-import { registerRoutes } from "../backend/routes/register";
+import { registerRoutes } from "../../backend/routes/register";
 import { PrismaClient } from "@prisma/client";
 // import bcrypt from 'bcrypt';
-const dotenv = require("dotenv");
-dotenv.config({ path: process.env.DOTENV_CONFIG_PATH || ".env" });
+jest.setTimeout(10000);
+
+require("dotenv").config({ path: ".env.test" }); //might have to add this to every test file, check the config later
 
 const prisma = new PrismaClient();
 const supertest = require("supertest"); //rmb supertest uses commonjs export!!
@@ -23,11 +24,23 @@ describe("Auth endpoints", () => {
   });
 
   beforeEach(async () => {
-    await prisma.user.deleteMany();
+    await prisma.$transaction([
+      prisma.message.deleteMany(),
+      prisma.participant.deleteMany(),
+      prisma.conversation.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.business.deleteMany(),
+    ]);
   });
 
   afterEach(async () => {
-    await prisma.user.deleteMany();
+    await prisma.$transaction([
+      prisma.message.deleteMany(),
+      prisma.participant.deleteMany(),
+      prisma.conversation.deleteMany(),
+      prisma.user.deleteMany(),
+      prisma.business.deleteMany(),
+    ]);
   });
 
   it("should register a new user successfully", async () => {
@@ -35,7 +48,7 @@ describe("Auth endpoints", () => {
       username: "regtestuser",
       email: "test@example.com",
       password: "password123",
-      role: "CLIENT",
+      role: "CUSTOMER",
     });
 
     expect(response.status).toBe(200);
@@ -49,7 +62,7 @@ describe("Auth endpoints", () => {
         username: "regtestuser",
         email: "test@example.com",
         password: "hashedpassword",
-        role: "CLIENT",
+        role: "CUSTOMER",
       },
     });
 
@@ -57,7 +70,7 @@ describe("Auth endpoints", () => {
       username: "regtestuser",
       email: "new@example.com",
       password: "password123",
-      role: "CLIENT",
+      role: "CUSTOMER",
     });
 
     expect(response.status).toBe(400);
@@ -79,10 +92,12 @@ describe("Auth endpoints", () => {
   });
 
   it("should register a business", async () => {
-    const response = await supertest(fastify.server).post("/register-business").send({
-      name: "Test Business",
-    });
-    
+    const response = await supertest(fastify.server)
+      .post("/register-business")
+      .send({
+        name: "Test Business",
+      });
+
     expect(response.status).toBe(200);
     expect(response.body).toHaveProperty("id");
     expect(response.body.name).toBe("Test Business");
@@ -107,5 +122,4 @@ describe("Auth endpoints", () => {
     expect(response.body.username).toBe("agentuser");
     expect(response.body.email).toBe("agent@example.com");
   });
-
 });

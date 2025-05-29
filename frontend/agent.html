@@ -1,2 +1,144 @@
-<h1>Welcome Agent!</h1>
-<p>This is the agent dashboard.</p>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Agent Interface</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 2rem;
+    }
+    h1 {
+      color: #333;
+    }
+    .conversation-card {
+      border: 1px solid #ccc;
+      padding: 1rem;
+      margin-bottom: 1rem;
+      border-radius: 8px;
+      background: #f9f9f9;
+    }
+    .error {
+      color: red;
+    }
+    input, button {
+      padding: 0.5rem;
+      margin: 0.5rem 0;
+      width: 300px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Conversations</h1>
+  <div id="user-info">
+    <p><strong>User:</strong> <span id="username">Loading...</span></p>
+    <p><strong>Role:</strong> <span id="role">Loading...</span></p>
+    <p><strong>Business:</strong> <span id="business">Loading...</span></p>
+  </div>
+
+  <div id="results"></div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () => {
+    const resultsDiv = document.getElementById("results");
+    const conversations = [];
+
+    function renderConversations() {
+      resultsDiv.innerHTML = "";
+      if (conversations.length === 0) {
+        resultsDiv.innerHTML = "<p>No conversations yet. Click above to create one.</p>";
+        return;
+      }
+
+      conversations.forEach(participant => {
+        // participant.conversation contains the actual conversation data
+        const convo = participant.conversation;
+        const container = document.createElement("div");
+        container.className = "conversation-card";
+        container.innerHTML = `
+          <p><strong>Conversation ID:</strong> ${convo.id}</p>
+          <p><strong>Business ID:</strong> ${convo.businessId}</p>
+          <p><strong>Type:</strong> ${convo.type}</p>
+          <p><strong>Created At:</strong> ${new Date(convo.createdAt).toLocaleString()}</p>
+          <p><strong>Your Role:</strong> ${participant.role}</p>
+        `;
+        resultsDiv.appendChild(container);
+      });
+    }
+
+
+    // Load Existing Conversations
+    async function loadExistingConversations() {
+      const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+
+      if (!token) {
+        alert("JWT token is required.");
+        window.location.href = "/";
+        return;
+      }
+
+      try {
+        const resp = await fetch('http://localhost:3001/getAgentChats', {  // updated URL
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`,
+          },
+        });
+
+        const data = await resp.json();
+
+        if (Array.isArray(data.userAsParticipantList)) {
+          conversations.push(...data.userAsParticipantList);
+          renderConversations();
+        } else {
+          console.error("Unexpected response:", data);
+        }
+      } catch (err) {
+        console.error("Error loading conversations:", err);
+      }
+    }
+
+      // Fetch user details and update UI
+      async function loadUserDetails() {
+        const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+
+        if (!token) {
+          alert("JWT token is required.");
+          window.location.href = "/";
+          return;
+        }
+
+        try {
+          const resp = await fetch('http://localhost:3001/getUserDetails', {
+            method: 'GET',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`,
+            },
+          });
+
+          const data = await resp.json();
+
+          if (!resp.ok) {
+            console.error("Error fetching user details:", data);
+            alert(`Error: ${data.message || data.error || resp.statusText}`);
+            return;
+          }
+
+          // Update UI
+          document.getElementById("username").textContent = data.username;
+          document.getElementById("role").textContent = data.role;
+          document.getElementById("business").textContent = data.businessName;
+
+        } catch (err) {
+          console.error("Error loading user details:", err);
+        }
+      }
+
+      loadUserDetails();
+      loadExistingConversations();
+    });
+  </script>
+</body>
+</html>

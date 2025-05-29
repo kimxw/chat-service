@@ -42,7 +42,7 @@ model User {
   username   String  @unique
   email      String  @unique
   password   String
-  role       String // 'CLIENT' or 'AGENT'
+  role       String // 'CUSTOMER' or 'AGENT'
   businessId BigInt? // optional for clients, required for agents
 
   business Business? @relation(fields: [businessId], references: [id])
