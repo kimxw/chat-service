@@ -44,3 +44,26 @@ export const getAgentChats = async (
   
   return participants;
 };
+
+export async function removeAllParticipantsFromConversation(
+  conversationId: bigint,
+  userId: bigint
+) {
+  // Check if the user is a participant
+  const participant = await prisma.participant.findUnique({
+    where: {
+      conversationId_userId: { conversationId, userId },
+    },
+  });
+
+  if (!participant) {
+    throw new Error("You are not part of this conversation.");
+  }
+
+  // Delete all participants from the conversation
+  await prisma.participant.deleteMany({
+    where: { conversationId },
+  });
+
+  return { success: true, message: "All participants removed from conversation." };
+}

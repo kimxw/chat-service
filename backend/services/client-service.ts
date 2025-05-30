@@ -26,7 +26,11 @@ export const createClientChat = async (
       role: "CUSTOMER",
     },
     include: {
-      conversation: true,  // fetch the nested conversation object
+      conversation: {
+      include: {
+        business: true,
+      },
+    },
     },
   });
 

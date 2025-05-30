@@ -1,0 +1,42 @@
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #121212;
+  color: #e0e0e0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  color: #ffffff;
+}
+
+a {
+  color: #90caf9;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+p, li, label, span, div, input, button {
+  color: #e0e0e0;
+}
+
+input, button, textarea, select {
+  background-color: #1e1e1e;
+  color: #e0e0e0;
+  border: 1px solid #333;
+  border-radius: 6px;
+  padding: 0.5rem;
+  margin: 0.3rem 0;
+}
+
+button {
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+button:hover {
+  background-color: #333;
+}
