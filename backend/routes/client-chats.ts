@@ -3,6 +3,7 @@ import { createClientChat, getClientChats } from "../services/client-service";
 import { getBusiness } from "../services/business-services";
 import { verifyJWT } from "../utils/verifyJWT";
 import serialiseBigInts from "../utils/serialiser";
+import { connectedUsers } from "../utils/connections";
 
 export async function clientChatRoutes(fastify: FastifyInstance) {
   fastify.get("/getClientChats", async (request, reply) => {
@@ -42,6 +43,15 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
       );
 
       const serializedNewParticipantEntry = serialiseBigInts(newParticipantEntry);
+
+      Object.values(connectedUsers).forEach(user => {
+        if (user?.socket?.readyState === 1 && user.role === 'AGENT') {
+          user.socket.send(JSON.stringify({
+            type: "REFRESH_CHATS",
+            message: "A new chat has been created. Please refresh.",
+          }));
+        }
+      });
 
       reply.send({ newParticipantEntry: serializedNewParticipantEntry });
     } catch (err: any) {
