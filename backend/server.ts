@@ -6,6 +6,7 @@ import { authRoutes } from "./routes/auth";
 import { registerRoutes } from "./routes/register";
 import { clientChatRoutes } from "./routes/client-chats";
 import { agentChatRoutes } from "./routes/agent-chats";
+import { messageRoutes } from "./routes/messages";
 import * as dotenv from "dotenv";
 import { connectedUsers } from "./utils/connections";
 
@@ -30,6 +31,7 @@ authRoutes(fastify);
 registerRoutes(fastify);
 clientChatRoutes(fastify);
 agentChatRoutes(fastify);
+messageRoutes(fastify);
 
 function getRawUrl(req: any): string {
   return req?.raw?.req?.url || req?.raw?.url || req?.url || '';

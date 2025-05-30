@@ -1,10 +1,10 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate,  Outlet } from 'react-router-dom';
 
 
 
 export default function AgentDashboard() {
-  const [userInfo, setUserInfo] = useState({ username: 'Loading...', role: 'Loading...', business: 'Loading...' });
+  const [userInfo, setUserInfo] = useState({ id: -1, username: 'Loading...', role: 'Loading...', business: 'Loading...' });
   const [conversations, setConversations] = useState([]);
   const socket = useRef(null);
   const navigate = useNavigate();
@@ -53,7 +53,7 @@ export default function AgentDashboard() {
         });
         const data = await resp.json();
         if (resp.ok) {
-          setUserInfo({ username: data.username, role: data.role, business: data.businessName });
+          setUserInfo({ id: data.id, username: data.username, role: data.role, business: data.businessName });
         } else {
           alert(`Error: ${data.message || data.error || resp.statusText}`);
         }
@@ -114,6 +114,7 @@ export default function AgentDashboard() {
 
 return (
   <div style={{ fontFamily: 'Arial, sans-serif' }}>
+    <Outlet />
     <header className="top-banner">
       <div className="app-name"><h1>ServiceHub</h1></div>
       <div className="user-info">
@@ -131,7 +132,19 @@ return (
         ) : (
           
             conversations.map(({ conversation, role }) => (
-                <div key={conversation.id} className="conversation-card" onClick={((() => navigate('/chatInterface')))} style={{ cursor: 'pointer' }}>
+                <div key={conversation.id} 
+                    className="conversation-card" 
+                    onClick={() =>
+                        navigate('/chatInterface', {
+                        state: {
+                            currentUserRole: 'agent', 
+                            currentUserId: userInfo.id, 
+                            conversationId: conversation.id,
+                        },
+                        })
+                    }
+                    style={{ cursor: 'pointer' }}
+                >
                 <div className="conversation-type-badge">
                     {conversation.type}
                 </div>

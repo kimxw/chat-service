@@ -5,6 +5,7 @@ import { verifyJWT } from "../utils/verifyJWT";
 // dotenv.config();
 
 import prisma from "../utils/db";
+import serialiseBigInts from "../utils/serialiser";
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 
@@ -64,7 +65,7 @@ export async function authRoutes(fastify: FastifyInstance) {
       : null;
 
 
-      reply.send({ username: user.username, role: user.role, businessName: business?.name });
+      reply.send(serialiseBigInts({ id: user.id, username: user.username, role: user.role, businessName: business?.name }));
     } catch (err: any) {
       console.error(err);
       reply.code(500).send({ error: "Internal server error" });

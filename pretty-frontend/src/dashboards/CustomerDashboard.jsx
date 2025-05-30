@@ -1,12 +1,14 @@
 import React, { useState, useEffect, useRef } from 'react';
 import '../App.css';
+import { useNavigate } from 'react-router-dom';
 
 
 export default function CustomerDashboard() {
-  const [userInfo, setUserInfo] = useState({ username: '', role: '', business: '' });
+  const [userInfo, setUserInfo] = useState({ id: -1, username: '', role: '', business: '' });
   const [conversations, setConversations] = useState([]);
   const [businessId, setBusinessId] = useState('');
   const socket = useRef(null);
+const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -22,7 +24,7 @@ export default function CustomerDashboard() {
       });
       if (resp.ok) {
         const data = await resp.json();
-        setUserInfo({ username: data.username, role: data.role, business: data.businessName });
+        setUserInfo({ id: data.id, username: data.username, role: data.role, business: data.businessName });
       } else {
         alert('Failed to load user details');
       }
@@ -128,7 +130,20 @@ export default function CustomerDashboard() {
                 <p>No conversations yet. Click above to create one.</p>
                 ) : (
                 conversations.map(({ conversation, role }) => (
-                <div key={conversation.id} className="conversation-card">
+                <div key={conversation.id} 
+                    className="conversation-card" 
+                    onClick={() => {
+                        console.log("Navigating with userInfo.id:", userInfo.id);
+                        navigate('/chatInterface', {
+                        state: {
+                            currentUserRole: 'customer', 
+                            currentUserId: userInfo.id, 
+                            conversationId: conversation.id,
+                        },
+                        })
+                    }}
+                    style={{ cursor: 'pointer' }}
+                >
                     <div className="conversation-type-badge">
                         {conversation.type}
                     </div>
