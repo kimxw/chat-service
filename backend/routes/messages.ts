@@ -1,7 +1,8 @@
 import { FastifyInstance } from 'fastify';
-import { getConversationMessages, getConversationFromId, findParticipantInConversation } from '../services/message-retrieval'
+import { getConversationMessages, getConversationFromId, findParticipantInConversation, getParticipantListOfConversation } from '../services/message-service'
 import prisma from '../utils/db';
 import serialiseBigInts from '../utils/serialiser';
+import { connectedUsers } from '../utils/connections';
 
 export async function messageRoutes(app: FastifyInstance) {
 
@@ -17,33 +18,30 @@ export async function messageRoutes(app: FastifyInstance) {
     return reply.send(serialiseBigInts(conversation.messages));
   });
 
-
-  app.post('/conversations/:conversationId/messages', async (request, reply) => {
-    const { conversationId } = request.params as { conversationId: string };
-    const {
-      senderId,
-      body,
-      fileUrl,
-      mimeType,
-      contentType = 'TEXT',
-    } = request.body as {
-      senderId: string;
-      body?: string;
-      fileUrl?: string;
-      mimeType?: string;
-      contentType?: 'TEXT' | 'FILE' | 'IMAGE' | 'VIDEO' | 'OTHER';
-    };
+app.post<{
+  Params: { conversationId: string };
+  Body: {
+    senderId: string;
+    body?: string;
+    fileUrl?: string;
+    mimeType?: string;
+    contentType?: 'TEXT' | 'FILE' | 'IMAGE' | 'VIDEO' | 'OTHER';
+  };
+}>('/conversations/:conversationId/messages', async (request, reply) => {
+  try {
+    const { conversationId } = request.params;
+    const { senderId, body, fileUrl, mimeType, contentType = 'TEXT' } = request.body;
 
     console.log("send pressed");
 
     // Validate Conversation
     const conversation = await getConversationFromId(BigInt(conversationId));
     if (!conversation) {
-        console.log(`Conversation with id ${conversationId} not found`);
+      console.log(`Conversation with id ${conversationId} not found`);
       return reply.status(404).send({ error: 'Conversation with given id not found' });
     }
     console.log("conversation validated");
-    
+
     // Fetch the sender details (id and username)
     const sender = await prisma.user.findUnique({
       where: { id: BigInt(senderId) },
@@ -55,12 +53,11 @@ export async function messageRoutes(app: FastifyInstance) {
     }
 
     // Validate Sender (must be participant in conversation)
-    const participant =  await findParticipantInConversation(BigInt(conversationId), BigInt(senderId));
+    const participant = await findParticipantInConversation(BigInt(conversationId), BigInt(senderId));
     if (!participant) {
       return reply.status(403).send({ error: 'User is not a participant in this conversation' });
     }
     console.log("participant validated");
-
 
     // Validate content fields
     if (!body && !fileUrl) {
@@ -82,11 +79,41 @@ export async function messageRoutes(app: FastifyInstance) {
 
     console.log(`message validated ${body}`);
 
-    
+    const participantList = await getParticipantListOfConversation(BigInt(conversationId));
+    console.log("participant list generated:", participantList);
+    const participantUserIds = participantList.map(participant => participant.userId.toString());
+    console.log("participantUserIds generated:", participantUserIds);
+
+    // Notify all participants in the chat
+    for (const [userId, user] of Object.entries(connectedUsers)) {
+      console.log(userId);
+      console.log(participantUserIds.includes(userId));
+      console.log(user?.socket?.readyState === 1);
+      if (
+        user?.socket?.readyState === 1 &&
+        participantUserIds.includes(userId)
+      ) {
+        console.log("message sent");
+        user.socket.send(JSON.stringify({
+          type: "NEW_MESSAGE",
+          message: serialiseBigInts({
+            ...message,
+            sender,
+          }),
+        }));
+      }
+    }
+
+    console.log("broadcast message sent");
+
     return reply.status(201).send(serialiseBigInts({
       ...message,
-      sender,  // Include the full sender object in the response
+      sender,
     }));
 
-  });
+  } catch (error) {
+    console.error('Error in POST /conversations/:conversationId/messages:', error);
+    return reply.status(500).send({ error: 'Internal server error' });
+  }
+});
 }

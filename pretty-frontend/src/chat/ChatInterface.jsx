@@ -1,13 +1,28 @@
 import React, { useState, useRef, useEffect } from "react";
 import "./ChatInterface.css";
-import { useLocation } from 'react-router-dom';
+import { useLocation } from "react-router-dom";
+import { useWebSocket } from "../WebSocketContext";
 
 export default function ChatInterface() {
   const location = useLocation();
-  const { currentUserRole, currentUserId, conversationId } = location.state || {};
-//   console.log(`currentUserRole -> ${currentUserRole}`)
-//   console.log(`currentUserId -> ${currentUserId}`)
-//   console.log(`conversationId -> ${conversationId}`)
+  const { currentUserId, conversationId } = location.state || {};
+  //   console.log(`currentUserRole -> ${currentUserRole}`)
+  //   console.log(`currentUserId -> ${currentUserId}`)
+  //   console.log(`conversationId -> ${conversationId}`)
+
+  const { lastMessage } = useWebSocket();
+
+  useEffect(() => {
+    if (!lastMessage) return;
+
+    if (
+      lastMessage.type === "NEW_MESSAGE" &&
+      lastMessage.message.conversationId === conversationId
+    ) {
+      console.log("NEW_MESSAGE received via WebSocket:", lastMessage.message);
+      setMessages((prev) => [...prev, lastMessage.message]);
+    }
+  }, [lastMessage, conversationId]);
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -18,57 +33,58 @@ export default function ChatInterface() {
   }, [messages]);
 
   // Fetch existing messages when the component mounts
-  // In your ChatInterface.jsx
 
-    useEffect(() => {
+  useEffect(() => {
     const fetchMessages = async () => {
-        try {
-        const res = await fetch(`http://localhost:3001/conversations/${conversationId.toString()}/messages`);
+      try {
+        const res = await fetch(
+          `http://localhost:3001/conversations/${conversationId.toString()}/messages`,
+        );
         if (!res.ok) throw new Error("Failed to fetch messages");
         const data = await res.json();
         setMessages(
-            data.map((msg) => ({
+          data.map((msg) => ({
             id: msg.id,
             sender: msg.sender,
-            body: msg.body || "", // Handle optional body
+            body: msg.body || "",
             createdAt: msg.createdAt,
-            fileUrl: msg.fileUrl, // if you want to handle file messages
-            }))
+            fileUrl: msg.fileUrl,
+          })),
         );
-        } catch (err) {
+      } catch (err) {
         console.error(err);
-        }
+      }
     };
 
     fetchMessages();
-    }, [conversationId]);
+  }, [conversationId]);
 
+  const handleSend = async () => {
+    if (!input.trim()) return;
 
-    const handleSend = async () => {
-        if (!input.trim()) return;
+    try {
+      const response = await fetch(
+        `http://localhost:3001/conversations/${conversationId.toString()}/messages`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            senderId: currentUserId.toString(), // or currentUserId if string
+            body: input.trim(),
+            contentType: "TEXT",
+          }),
+        },
+      );
 
-        try {
-            const response = await fetch(`http://localhost:3001/conversations/${conversationId.toString()}/messages`, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-                senderId: currentUserId.toString(), // or currentUserId if string
-                body: input.trim(),
-                contentType: "TEXT",
-            }),
-            });
+      if (!response.ok) throw new Error("Failed to send message");
 
-            if (!response.ok) throw new Error("Failed to send message");
-
-            const newMessage = await response.json();
-            console.log(newMessage);
-            setMessages((prev) => [...prev, newMessage]);
-            setInput("");
-        } catch (err) {
-            console.error(err);
-        }
-    };
-
+      const newMessage = await response.json();
+      console.log(newMessage);
+      setInput("");
+    } catch (err) {
+      console.error(err);
+    }
+  };
 
   const handleKeyDown = (e) => {
     if (e.key === "Enter" && !e.shiftKey) {
@@ -91,10 +107,10 @@ export default function ChatInterface() {
                 isOwnMessage ? "own-message" : "other-message"
               }`}
             >
-              <div className="sender-label">
-                {msg.sender.username}
-              </div>
-              <div className={`chat-message ${isOwnMessage ? "right" : "left"}`}>
+              <div className="sender-label">{msg.sender.username}</div>
+              <div
+                className={`chat-message ${isOwnMessage ? "right" : "left"}`}
+              >
                 {msg.body}
               </div>
               <div className="message-meta">

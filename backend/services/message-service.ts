@@ -37,6 +37,16 @@ export const findParticipantInConversation = async(
     });
 }
 
+export const getParticipantListOfConversation = async (
+  conversationId: bigint
+) => {
+  return await prisma.participant.findMany({
+    where: {
+      conversationId: conversationId,
+    },
+  });
+};
+
 export const createNewMessage = async (
     conversationId : bigint,
     senderId: bigint,

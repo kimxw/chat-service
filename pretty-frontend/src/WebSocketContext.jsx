@@ -1,39 +1,82 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useRef,
+} from "react";
+import { jwtDecode } from "jwt-decode";
 
 const WebSocketContext = createContext();
 
-export const useWebSocket = () => useContext(WebSocketContext);
+export const WebSocketProvider = ({ children }) => {
+  const [lastMessage, setLastMessage] = useState(null);
+  const [userId, setUserId] = useState(null); // keep userId in state here
+  const socketRef = useRef(null);
 
-export const WebSocketProvider = ({ userId, children }) => {
-  const [socket, setSocket] = useState(null);
-
+  // Decode token once on mount to set userId
   useEffect(() => {
-    if (!userId) return; // wait for user login
+    const token = localStorage.getItem("token");
+    if (token) {
+      try {
+        const decoded = jwtDecode(token);
+        setUserId(decoded.userId || decoded.id);
+      } catch (err) {
+        console.error("Failed to decode token", err);
+        setUserId(null);
+      }
+    }
+  }, []);
 
-    const ws = new WebSocket(`ws://localhost:3001/ws?userId=${userId}`);
+  // Open WebSocket connection only when userId is known
+  useEffect(() => {
+    if (!userId) return;
 
-    ws.onopen = () => {
-      console.log('WebSocket connection established');
+    console.log(userId);
+    console.log("trying to open websocket");
+
+    const token = localStorage.getItem("token");
+    socketRef.current = new WebSocket(
+      `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`,
+    );
+
+    socketRef.current.onopen = () => {
+      console.log("WebSocket opened");
     };
 
-    ws.onclose = (event) => {
-      console.log('WebSocket connection closed:', event);
+    socketRef.current.onmessage = (event) => {
+      const message = JSON.parse(event.data);
+      setLastMessage(message);
     };
 
-    ws.onerror = (error) => {
-      console.error('WebSocket error:', error);
+    socketRef.current.onerror = (err) => {
+      console.error("WebSocket error:", err);
     };
 
-    setSocket(ws);
+    socketRef.current.onclose = (event) => {
+      console.log(`WebSocket closed: ${event.code} ${event.reason}`);
+    };
 
     return () => {
-      ws.close();
+      socketRef.current?.close();
     };
   }, [userId]);
 
+  const sendMessage = (msg) => {
+    if (socketRef.current?.readyState === WebSocket.OPEN) {
+      socketRef.current.send(JSON.stringify(msg));
+    } else {
+      console.warn("WebSocket not connected");
+    }
+  };
+
   return (
-    <WebSocketContext.Provider value={socket}>
+    <WebSocketContext.Provider value={{ lastMessage, sendMessage, userId }}>
       {children}
     </WebSocketContext.Provider>
   );
 };
+
+export const useWebSocket = () => useContext(WebSocketContext);
+
+export { WebSocketContext };
