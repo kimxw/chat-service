@@ -16,7 +16,7 @@ export default function AgentDashboard() {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json',
-                'Authorization': `Bearer ${token}`, // Replace with your actual token logic
+                'Authorization': `Bearer ${token}`,
             },
             body: JSON.stringify({ conversationId }),
             });
@@ -42,7 +42,6 @@ export default function AgentDashboard() {
     const token = localStorage.getItem('token') || prompt('Please enter your JWT token:');
     if (!token) {
       alert('JWT token is required.');
-      // You may want to redirect here or handle auth failure
       return;
     }
 

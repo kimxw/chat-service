@@ -43,6 +43,16 @@ export async function messageRoutes(app: FastifyInstance) {
       return reply.status(404).send({ error: 'Conversation with given id not found' });
     }
     console.log("conversation validated");
+    
+    // Fetch the sender details (id and username)
+    const sender = await prisma.user.findUnique({
+      where: { id: BigInt(senderId) },
+      select: { id: true, username: true },
+    });
+
+    if (!sender) {
+      return reply.status(404).send({ error: 'Sender not found' });
+    }
 
     // Validate Sender (must be participant in conversation)
     const participant =  await findParticipantInConversation(BigInt(conversationId), BigInt(senderId));
@@ -50,6 +60,7 @@ export async function messageRoutes(app: FastifyInstance) {
       return reply.status(403).send({ error: 'User is not a participant in this conversation' });
     }
     console.log("participant validated");
+
 
     // Validate content fields
     if (!body && !fileUrl) {
@@ -71,6 +82,11 @@ export async function messageRoutes(app: FastifyInstance) {
 
     console.log(`message validated ${body}`);
 
-    return reply.status(201).send(serialiseBigInts(message));
+    
+    return reply.status(201).send(serialiseBigInts({
+      ...message,
+      sender,  // Include the full sender object in the response
+    }));
+
   });
 }

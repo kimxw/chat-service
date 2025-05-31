@@ -5,9 +5,9 @@ import { useLocation } from 'react-router-dom';
 export default function ChatInterface() {
   const location = useLocation();
   const { currentUserRole, currentUserId, conversationId } = location.state || {};
-  console.log(`currentUserRole -> ${currentUserRole}`)
-  console.log(`currentUserId -> ${currentUserId}`)
-  console.log(`conversationId -> ${conversationId}`)
+//   console.log(`currentUserRole -> ${currentUserRole}`)
+//   console.log(`currentUserId -> ${currentUserId}`)
+//   console.log(`conversationId -> ${conversationId}`)
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -30,7 +30,7 @@ export default function ChatInterface() {
             data.map((msg) => ({
             id: msg.id,
             sender: msg.sender,
-            text: msg.body || "", // Handle optional body
+            body: msg.body || "", // Handle optional body
             createdAt: msg.createdAt,
             fileUrl: msg.fileUrl, // if you want to handle file messages
             }))
@@ -61,15 +61,8 @@ export default function ChatInterface() {
             if (!response.ok) throw new Error("Failed to send message");
 
             const newMessage = await response.json();
-            setMessages((prev) => [
-            ...prev,
-            {
-                id: newMessage.id,
-                sender: currentUserRole,
-                text: newMessage.body || "",
-                createdAt: newMessage.createdAt,
-            },
-            ]);
+            console.log(newMessage);
+            setMessages((prev) => [...prev, newMessage]);
             setInput("");
         } catch (err) {
             console.error(err);
@@ -99,11 +92,10 @@ export default function ChatInterface() {
               }`}
             >
               <div className="sender-label">
-                {/* { console.log(msg.sender) } */}
                 {msg.sender.username}
               </div>
               <div className={`chat-message ${isOwnMessage ? "right" : "left"}`}>
-                {msg.text}
+                {msg.body}
               </div>
               <div className="message-meta">
                 <small>{new Date(msg.createdAt).toLocaleTimeString()}</small>

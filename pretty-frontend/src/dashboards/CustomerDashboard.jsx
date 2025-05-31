@@ -137,7 +137,7 @@ const navigate = useNavigate();
                         navigate('/chatInterface', {
                         state: {
                             currentUserRole: 'customer', 
-                            currentUserId: userInfo.id, 
+                            currentUserId: userInfo.id,
                             conversationId: conversation.id,
                         },
                         })
