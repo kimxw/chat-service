@@ -1,9 +1,11 @@
+import { ConversationType } from "@prisma/client";
 import prisma from "../utils/db";
 import { addAgentToChat } from "./agent-services";
 
 export const createClientChat = async (
   businessId: bigint,
   userId: bigint,
+  conversationType: ConversationType,
 ) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
@@ -14,7 +16,7 @@ export const createClientChat = async (
   const conversation = await prisma.conversation.create({
     data: {
       businessId: businessId,
-      type: "SUPPORT_ROOM",
+      type: conversationType,
     },
   });
 
@@ -26,23 +28,21 @@ export const createClientChat = async (
       role: "CUSTOMER",
     },
     include: {
-      conversation: true,  // fetch the nested conversation object
+      conversation: {
+        include: {
+          business: true,
+        },
+      },
     },
   });
 
   // 3) make all agents from that business participiants in this conversation
   await addAgentToChat(businessId, conversation.id);
-  
 
   return participant;
 };
 
-
-
-
-export const getClientChats = async (
-  userId: bigint,
-) => {
+export const getClientChats = async (userId: bigint) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
   if (user.role !== "CUSTOMER")
@@ -58,6 +58,6 @@ export const getClientChats = async (
       },
     },
   });
-  
+
   return participants;
 };

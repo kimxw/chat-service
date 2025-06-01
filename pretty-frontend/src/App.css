@@ -1,0 +1,253 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+
+.top-banner {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 80px; /* Adjust if needed */
+  background: rgba(30, 30, 30, 0.6);
+  backdrop-filter: blur(8px);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  z-index: 1000;
+}
+
+.page-content {
+  padding:40px;
+  padding-top: 90px;
+}
+
+.user-info {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  z-index: 1000;
+  background-color: transparent; /* explicitly transparent */
+}
+
+.user-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%; /* circular */
+  object-fit: cover;
+}
+
+.user-name {
+  font-weight: bold;
+  font-size: 0.9rem;
+}
+
+.container {
+  max-width: 800px;
+  margin: 2rem auto;
+  padding: 1rem;
+}
+
+.conversation-card {
+  position: relative;
+  background-color: #1e1e1e;
+  border: 1px solid #333;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  transition: transform 0.2s;
+  line-height: 0.2;
+}
+
+.conversation-card:hover {
+  transform: scale(1.01);
+  
+}
+
+.conversation-type-badge {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background-color: #e0e0e0;
+  color: #333;
+  padding:0.5rem 0.5rem;
+  border-radius: 5px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  box-shadow: 0 0 5px rgba(0,0,0,0.1);
+  user-select: none;
+}
+
+.direct {
+  background-color: #007bff; /* blue */
+}
+
+.support-room {
+  background-color: #28a745; /* green */
+}
+
+.community {
+  background-color: #ffc107; /* yellow */
+}
+
+.business-name {
+  font-size: 30px;
+  font-weight: bold;
+  padding-bottom: 1px;
+}
+
+
+.delete-button {
+  position: absolute;
+  bottom:2px;
+  right: 5px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  filter: brightness(1.1);
+}
+
+.delete-button:hover .delete-icon {
+  transform: scale(1.1);
+  filter: brightness(1.2);
+}
+
+.delete-icon {
+  width: 30px;
+  height: 30px;
+  transition: transform 0.2s ease, filter 0.2s ease;
+}
+
+.split-page {
+  display: flex;
+  height: 100vh;
+  background-color: #121212;
+  color: #f0f0f0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.split-left {
+  width: 55%;
+  background: #1e1e1e;
+}
+
+.split-right {
+  width: 45%;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.form-group input {
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1f1f1f;
+  color: #fff;
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.form-group button {
+  padding: 0.9rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.form-group button:hover {
+  background-color: #0056b3;
+}
+
+.form-button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+.form-button:hover {
+  background-color: #0056b3;
+}
+
+.register-group {
+  justify-content: center;
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.8rem;
+}
+
+.register-group button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+
+.form-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}

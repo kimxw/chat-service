@@ -45,6 +45,8 @@
   <div id="results"></div>
 
   <script>
+    let socket;    
+    
     document.addEventListener("DOMContentLoaded", () => {
     const resultsDiv = document.getElementById("results");
     const conversations = [];
@@ -184,6 +186,37 @@
         }
       }
 
+      function connectWebSocket() {
+      const token = localStorage.getItem('token') || prompt("Please enter your JWT token:");
+          if (!token) {
+          alert("JWT token is required.");
+          // handle no token case
+          } else {
+              socket = new WebSocket(`ws://localhost:3001/ws?token=${encodeURIComponent(token)}`);
+
+              socket.onopen = () => {
+                  console.log("WebSocket connection opened");
+              };
+
+              socket.onmessage = (event) => {
+                  console.log("Message from server:", event.data);
+                  const msg = JSON.parse(event.data);
+                  if (msg.type === "REFRESH_CHATS") {
+                      loadExistingConversations();
+                  }
+              };
+
+              socket.onerror = (error) => {
+                  console.error("WebSocket error:", error);
+              };
+
+              socket.onclose = (event) => {
+                  console.log(`WebSocket closed: code=${event.code}, reason=${event.reason}`);
+              };
+          }
+    }
+
+      connectWebSocket();
       loadUserDetails();
       loadExistingConversations();
     });

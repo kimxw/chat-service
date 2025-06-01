@@ -13,7 +13,7 @@ jest.setTimeout(10000);
 require("dotenv").config({ path: ".env.test" }); //might have to add this to every test file, check the config later
 
 const prisma = new PrismaClient();
-const supertest = require('supertest');
+const supertest = require("supertest");
 
 describe("Client Chats API", () => {
   let fastify;
@@ -50,7 +50,6 @@ describe("Client Chats API", () => {
         name: "NEW Test Business",
       },
     });
-
   });
 
   afterAll(async () => {
@@ -69,7 +68,7 @@ describe("Client Chats API", () => {
     const response = await supertest(fastify.server)
       .post("/createClientChat") // updated endpoint
       .set("Authorization", `Bearer dummyToken`)
-      .send({ businessId: business.id.toString() });
+      .send({ businessId: business.id.toString(), conversationType: "DIRECT" });
 
     expect(response.status).toBe(200);
 
@@ -92,15 +91,24 @@ describe("Client Chats API", () => {
     expect(conversation?.businessId.toString()).toBe(business.id.toString());
   });
 
-
   it("should return 400 for missing businessId", async () => {
     const response = await supertest(fastify.server)
       .post("/createClientChat")
       .set("Authorization", `Bearer dummyToken`)
-      .send({});
+      .send({ conversationType: "DIRECT" });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toMatch(/Missing businessId/i);
+    expect(response.body.error).toMatch(/Missing businessId/i);
+  });
+
+  it("should return 400 for missing conversationType", async () => {
+    const response = await supertest(fastify.server)
+      .post("/createClientChat")
+      .set("Authorization", `Bearer dummyToken`)
+      .send({ businessId: business.id.toString() });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toMatch(/Missing conversationType/i);
   });
 
   it("should return 400 for non-existing businessId", async () => {
@@ -119,7 +127,7 @@ describe("Client Chats API", () => {
     const createResponse = await supertest(fastify.server)
       .post("/createClientChat")
       .set("Authorization", `Bearer dummyToken`)
-      .send({ businessId: business.id.toString() });
+      .send({ businessId: business.id.toString(), conversationType: "DIRECT"});
 
     expect(createResponse.status).toBe(200);
 

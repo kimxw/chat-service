@@ -1,4 +1,5 @@
 import { FastifyInstance } from "fastify";
+import { addAgentToAllConversations } from "../services/agent-services";
 // import bcrypt from "bcrypt";
 // import * as dotenv from 'dotenv';
 // dotenv.config();
@@ -101,6 +102,8 @@ export async function registerRoutes(fastify: FastifyInstance) {
         businessId: parsedBusinessId,
       },
     });
+
+    await addAgentToAllConversations(parsedBusinessId, newUser.id);
 
     reply.send({
       id: newUser.id.toString(),

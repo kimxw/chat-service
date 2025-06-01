@@ -12,7 +12,7 @@ jest.setTimeout(10000);
 require("dotenv").config({ path: ".env.test" });
 
 const prisma = new PrismaClient();
-const supertest = require('supertest');
+const supertest = require("supertest");
 
 describe("Agent Chats API", () => {
   let fastify;
@@ -130,4 +130,49 @@ describe("Agent Chats API", () => {
     expect(response.body.success).toBe(true);
     expect(response.body.userAsParticipantList).toHaveLength(0);
   });
+
+  it("deletes chat for all participants and returns success", async () => {
+    // Create a new conversation with participants to test deletion
+    const testConversation = await prisma.conversation.create({
+      data: {
+        businessId: business.id,
+        type: "SUPPORT_ROOM",
+      },
+    });
+
+    await prisma.participant.createMany({
+      data: [
+        {
+          userId: customer.id,
+          conversationId: testConversation.id,
+          role: "CUSTOMER",
+        },
+        {
+          userId: agent.id,
+          conversationId: testConversation.id,
+          role: "AGENT",
+        },
+      ],
+    });
+
+    // Send DELETE request
+    const res = await supertest(fastify.server)
+      .delete("/deleteChatForAll")
+      .send({ conversationId: testConversation.id.toString() })
+      .set("Authorization", `Bearer dummyToken`);
+
+    expect(res.status).toBe(200);
+    expect(res.body).toEqual({
+      success: true,
+      message: "Chat deleted successfully",
+    });
+
+    // Confirm all participants removed for that conversation
+    const participantsAfter = await prisma.participant.findMany({
+      where: { conversationId: testConversation.id },
+    });
+    expect(participantsAfter).toHaveLength(0);
+  });
+
+
 });
