@@ -47,13 +47,12 @@ export const getParticipantListOfConversation = async (
         select: {
           id: true,
           username: true,
-          email: true, 
+          email: true,
         },
       },
     },
   });
 };
-
 
 export const createNewMessage = async (
   conversationId: bigint,

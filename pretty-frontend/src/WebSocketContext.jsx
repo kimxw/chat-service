@@ -38,27 +38,31 @@ export const WebSocketProvider = ({ children }) => {
     console.log("trying to open websocket");
 
     const token = localStorage.getItem("token");
-    socketRef.current = new WebSocket(
+    const socket = new WebSocket(
       `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`,
     );
 
-    socketRef.current.onopen = () => {
+    socketRef.current = socket;
+
+    socket.onopen = () => {
       console.log("WebSocket opened");
       setIsWsConnected(true);
+      setWs(socket); // <-- Add this line to update ws state!
     };
 
-    socketRef.current.onmessage = (event) => {
+    socket.onmessage = (event) => {
       const message = JSON.parse(event.data);
       setLastMessage(message);
     };
 
-    socketRef.current.onerror = (err) => {
+    socket.onerror = (err) => {
       console.error("WebSocket error:", err);
     };
 
-    socketRef.current.onclose = (event) => {
+    socket.onclose = (event) => {
       console.log(`WebSocket closed: ${event.code} ${event.reason}`);
       setIsWsConnected(false);
+      setWs(null); // Clear ws on close
     };
 
     return () => {

@@ -14,6 +14,9 @@ export default function ChatInterface() {
   const { ws, lastMessage } = useWebSocket();
 
   const [participants, setParticipants] = useState([]);
+  const [typingUsers, setTypingUsers] = useState([]);
+  const [isTyping, setIsTyping] = useState(false);
+  const typingTimeoutRef = useRef(null);
 
   const markAsReadByCustomer = async (conversationId, messageId) => {
     try {
@@ -77,28 +80,28 @@ export default function ChatInterface() {
   }
 
   useEffect(() => {
-  const fetchParticipants = async () => {
-    try {
-        const res = await fetch(`http://localhost:3001/conversations/${conversationId}/participants`);
+    const fetchParticipants = async () => {
+      try {
+        const res = await fetch(
+          `http://localhost:3001/conversations/${conversationId}/participants`,
+        );
         if (!res.ok) throw new Error("Failed to fetch participants");
         const data = await res.json();
         console.log("Fetched participants:", data); // Optional: Debugging
         setParticipants(data);
-    } catch (err) {
+      } catch (err) {
         console.error(err);
-    }
+      }
     };
 
-
-  fetchParticipants();
-}, [conversationId]);
-
+    fetchParticipants();
+  }, [conversationId]);
 
   useEffect(() => {
     if (!lastMessage) return;
+    console.log(lastMessage);
 
     const processLastMessage = async () => {
-      console.log(lastMessage);
       if (
         (lastMessage.type === "UPDATED_READ_STATUS_OF_AGENTS" &&
           currentRole === "CUSTOMER") ||
@@ -115,6 +118,31 @@ export default function ChatInterface() {
             ),
           );
         }
+      }
+
+      console.log(
+        lastMessage.type === "TYPING" &&
+          lastMessage.message.conversationId === conversationId,
+      );
+
+      if (
+        lastMessage.type === "TYPING" &&
+        lastMessage.message.conversationId === conversationId
+      ) {
+        console.log("TYPING Message broadcasted received");
+        const { username, isTyping, userId } = lastMessage.message;
+        const typingUserId = String(userId);
+
+        setTypingUsers((prev) => {
+          if (isTyping) {
+            if (!prev.find((u) => String(u.userId) === typingUserId)) {
+              return [...prev, { userId: typingUserId, username }];
+            }
+          } else {
+            return prev.filter((u) => String(u.userId) !== typingUserId);
+          }
+          return prev;
+        });
       }
 
       if (
@@ -223,22 +251,70 @@ export default function ChatInterface() {
     }
   };
 
+  const handleInputChange = (e) => {
+    setInput(e.target.value);
+
+    const currentUsername =
+      participants.find((p) => String(p.userId) === String(currentUserId))?.user
+        ?.username || "Unknown";
+
+    const sendTypingStatus = async (isTyping) => {
+      try {
+        await fetch(
+          `http://localhost:3001/conversations/${conversationId}/typing`,
+          {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              userId: currentUserId,
+              username: currentUsername,
+              isTyping,
+            }),
+          },
+        );
+      } catch (err) {
+        console.error("Error sending typing status:", err);
+      }
+    };
+
+    if (!isTyping) {
+      setIsTyping(true);
+      sendTypingStatus(true);
+    }
+
+    if (typingTimeoutRef.current) clearTimeout(typingTimeoutRef.current);
+
+    typingTimeoutRef.current = setTimeout(() => {
+      setIsTyping(false);
+      sendTypingStatus(false);
+    }, 1500);
+  };
+
+  const typingNames = typingUsers.map((u) =>
+    String(u.userId) === String(currentUserId) ? "You" : u.username,
+  );
+
+  const verb =
+    typingNames.length === 1
+      ? typingNames[0] === "You"
+        ? "are"
+        : "is"
+      : "are";
+
   return (
     <div className="chat-container">
       <div className="chat-header">
-        <div className="header-title">
-            {businessName} Chat Support
-        </div>
+        <div className="header-title">{businessName} Chat Support</div>
         <div className="participants-list">
-            {participants.map((participant, index) => (
+          {participants.map((participant, index) => (
             <span key={participant.id} className="participant-name">
-                {participant.user?.username || "Unknown"} ({participant.role.toLowerCase()})
-                {index < participants.length - 1 && ", "}
+              {participant.user?.username || "Unknown"} (
+              {participant.role.toLowerCase()})
+              {index < participants.length - 1 && ", "}
             </span>
-            ))}
+          ))}
         </div>
       </div>
-
 
       <div className="chat-messages">
         {messages.map((msg) => {
@@ -256,7 +332,6 @@ export default function ChatInterface() {
               }`}
             >
               <div className="sender-label">
-                {console.log(msg.sender)}
                 {msg.sender.role === "AGENT"
                   ? `${businessName} • ${msg.sender.username}`
                   : msg.sender.username}
@@ -283,12 +358,20 @@ export default function ChatInterface() {
         <div ref={messagesEndRef} />
       </div>
 
+      <div className="typing-indicator">
+        {typingUsers.length > 0 && (
+          <small>
+            {typingNames.join(", ")} {verb} typing...
+          </small>
+        )}
+      </div>
+
       <div className="chat-input-container">
         <textarea
           value={input}
-          onChange={(e) => setInput(e.target.value)}
+          onChange={handleInputChange}
           onKeyDown={handleKeyDown}
-          placeholder="Type your message..."
+          placeholder="Your message here"
           rows={2}
         />
         <button

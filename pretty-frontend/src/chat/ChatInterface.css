@@ -157,3 +157,10 @@
   background-color: #6a4a94;
 }
 
+.typing-indicator {
+  font-style: italic;
+  color: gray;
+  margin: 4px 0;
+  min-height: 20px;
+  padding-left: 1rem;
+}

@@ -147,18 +147,20 @@ export default function CustomerDashboard() {
                 key={conversation.id}
                 className="conversation-card"
                 onClick={() => {
-                    if (!isWsConnected) {
-                        alert("Connecting to chat server. Please wait...");
-                        return;
-                    }
-                    navigate("/chatInterface", {
+                  if (!isWsConnected) {
+                    alert(
+                      "Waiting for server connection. Please reload the page.",
+                    );
+                    return;
+                  }
+                  navigate("/chatInterface", {
                     state: {
                       currentUserId: userInfo.id,
                       conversationId: conversation.id,
                       currentRole: "CUSTOMER",
                       businessName: conversation.business.name,
                     },
-                  })
+                  });
                 }}
                 style={{ cursor: "pointer" }}
               >

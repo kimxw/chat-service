@@ -3,6 +3,7 @@ import prisma from "../utils/db";
 import { markMessageReadByAgent, markMessageReadByCustomer } from "./messages";
 import { getParticipantListOfConversation } from "../services/message-service";
 import serialiseBigInts from "../utils/serialiser";
+import { connectedUsers } from "../utils/connections";
 
 export async function generalUserServicesRoutes(fastify: FastifyInstance) {
   fastify.patch<{
@@ -52,20 +53,67 @@ export async function generalUserServicesRoutes(fastify: FastifyInstance) {
     },
   );
 
-    fastify.get("/conversations/:conversationId/participants", async (request, reply) => {
-        try {
-            const { conversationId } = request.params as { conversationId: string };
-            const participants = await getParticipantListOfConversation(BigInt(conversationId));
-            console.log(serialiseBigInts(participants));
-            reply.send(serialiseBigInts(participants));
-        } catch (error) {
-            console.error(
-                "Error in POST /conversations/:conversationId/messages:",
-                error,
-            );
-                return reply.status(500).send({ error: "Internal server error" });
-            }
-        });
+  fastify.get(
+    "/conversations/:conversationId/participants",
+    async (request, reply) => {
+      try {
+        const { conversationId } = request.params as { conversationId: string };
+        const participants = await getParticipantListOfConversation(
+          BigInt(conversationId),
+        );
+        console.log(serialiseBigInts(participants));
+        reply.send(serialiseBigInts(participants));
+      } catch (error) {
+        console.error(
+          "Error in POST /conversations/:conversationId/messages:",
+          error,
+        );
+        return reply.status(500).send({ error: "Internal server error" });
+      }
+    },
+  );
 
+  fastify.post("/conversations/:id/typing", async (req, res) => {
+    const { id: conversationId } = req.params as { id: string };
+    const { userId, username, isTyping } = req.body as {
+      userId: string;
+      username: string;
+      isTyping: boolean;
+    };
 
+    // console.log(req.body);
+
+    try {
+      const participantList = await getParticipantListOfConversation(
+        BigInt(conversationId),
+      );
+      const participantUserIds = participantList.map((p) =>
+        p.userId.toString(),
+      );
+
+      for (const [connectedUserId, user] of Object.entries(connectedUsers)) {
+        if (
+          user?.socket?.readyState === 1 &&
+          participantUserIds.includes(connectedUserId)
+        ) {
+          user.socket.send(
+            JSON.stringify({
+              type: "TYPING",
+              message: serialiseBigInts({
+                conversationId,
+                userId,
+                username,
+                isTyping,
+              }),
+            }),
+          );
+        }
+      }
+
+      res.send({ success: true });
+    } catch (error) {
+      console.error("Error in typing endpoint:", error);
+      res.status(500).send({ success: false, error: error.message });
+    }
+  });
 }

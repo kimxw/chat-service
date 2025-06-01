@@ -10,8 +10,9 @@ export default function AgentDashboard() {
     business: "Loading...",
   });
   const [conversations, setConversations] = useState([]);
-  const { sendMessage, lastMessage, userId, isWsConnected } = useContext(WebSocketContext); // Get the WebSocket tools
-  
+  const { sendMessage, lastMessage, userId, isWsConnected } =
+    useContext(WebSocketContext); // Get the WebSocket tools
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -145,18 +146,20 @@ export default function AgentDashboard() {
                 key={conversation.id}
                 className="conversation-card"
                 onClick={() => {
-                    if (!isWsConnected) {
-                        alert("Connecting to chat server. Please wait...");
-                        return;
-                    }
-                    navigate("/chatInterface", {
+                  if (!isWsConnected) {
+                    alert(
+                      "Waiting for server connection. Please reload the page.",
+                    );
+                    return;
+                  }
+                  navigate("/chatInterface", {
                     state: {
                       currentUserId: userInfo.id,
                       conversationId: conversation.id,
                       currentRole: "AGENT",
                       businessName: conversation.business.name,
                     },
-                  })
+                  });
                 }}
                 style={{ cursor: "pointer" }}
               >
@@ -175,10 +178,8 @@ export default function AgentDashboard() {
                   className="delete-button"
                   onClick={(e) => {
                     e.stopPropagation();
-                    deleteChatForAllUsers(conversation.id.toString())
-                  }
-                    
-                  }
+                    deleteChatForAllUsers(conversation.id.toString());
+                  }}
                 >
                   <img
                     src="/trashcan.png"
