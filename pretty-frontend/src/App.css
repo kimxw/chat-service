@@ -158,3 +158,96 @@
   height: 30px;
   transition: transform 0.2s ease, filter 0.2s ease;
 }
+
+.split-page {
+  display: flex;
+  height: 100vh;
+  background-color: #121212;
+  color: #f0f0f0;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+.split-left {
+  width: 55%;
+  background: #1e1e1e;
+}
+
+.split-right {
+  width: 45%;
+  padding: 4rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+  width: 80%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.form-group input {
+  padding: 0.8rem 1rem;
+  font-size: 1rem;
+  border: none;
+  border-radius: 8px;
+  background-color: #1f1f1f;
+  color: #fff;
+}
+
+.form-group input::placeholder {
+  color: #999;
+}
+
+.form-group button {
+  padding: 0.9rem 1rem;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.form-group button:hover {
+  background-color: #0056b3;
+}
+
+.form-button {
+  padding: 0.75rem;
+  font-size: 1rem;
+  background-color: #007bff;
+  border: none;
+  border-radius: 8px;
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 0.5rem;
+  transition: background-color 0.3s;
+}
+
+.form-button:hover {
+  background-color: #0056b3;
+}
+
+.register-group {
+  justify-content: center;
+  display: flex;
+  gap: 0.6rem;
+  margin-top: 1.8rem;
+}
+
+.register-group button {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+
+.form-title {
+  text-align: center;
+  margin-bottom: 2rem;
+}
