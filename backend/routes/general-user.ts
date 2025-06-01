@@ -6,17 +6,16 @@ import serialiseBigInts from "../utils/serialiser";
 import { connectedUsers } from "../utils/connections";
 
 export async function generalUserServicesRoutes(fastify: FastifyInstance) {
+  fastify.get("/presence/online-users", async (request, reply) => {
+    const onlineUsers = Object.entries(connectedUsers).map(
+      ([userId, { role }]) => ({
+        userId,
+        role,
+      }),
+    );
 
-    fastify.get('/presence/online-users', async (request, reply) => {
-
-        const onlineUsers = Object.entries(connectedUsers).map(([userId, { role }]) => ({
-            userId,
-            role,
-        }));
-
-        return serialiseBigInts(onlineUsers);
-    });
-
+    return serialiseBigInts(onlineUsers);
+  });
 
   fastify.patch<{
     Params: { conversationId: string; role: "CUSTOMER" | "AGENT" };

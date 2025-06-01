@@ -37,7 +37,7 @@ export const WebSocketProvider = ({ children }) => {
     console.log("Establishing WebSocket for userId:", userId);
     const token = localStorage.getItem("token");
     const socket = new WebSocket(
-      `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`
+      `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`,
     );
 
     socketRef.current = socket;

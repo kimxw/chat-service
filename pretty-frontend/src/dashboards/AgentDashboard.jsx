@@ -118,7 +118,6 @@ export default function AgentDashboard() {
     }
   }, [lastMessage, token]);
 
-
   return (
     <div style={{ fontFamily: "Arial, sans-serif" }}>
       <Outlet />

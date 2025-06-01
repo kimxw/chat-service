@@ -57,10 +57,12 @@ wss.on("connection", (ws, req) => {
     console.log(Object.keys(connectedUsers).length);
 
     const presenceSnapshot = getPresenceSnapshot();
-    ws.send(JSON.stringify({
-      type: "PRESENCE_SNAPSHOT",
-      usersOnline: presenceSnapshot,
-    }));
+    ws.send(
+      JSON.stringify({
+        type: "PRESENCE_SNAPSHOT",
+        usersOnline: presenceSnapshot,
+      }),
+    );
     console.log("PRESENCE_SNAPSHOT sent!");
 
     broadcastPresenceUpdate(user.id, true);
@@ -83,7 +85,6 @@ wss.on("connection", (ws, req) => {
   }
 });
 
-
 function broadcastPresenceUpdate(userId, isOnline) {
   const message = JSON.stringify({
     type: "PRESENCE_UPDATE",
@@ -105,7 +106,6 @@ function getPresenceSnapshot() {
   }
   return snapshot;
 }
-
 
 // Start server
 fastify.listen({ port: 3001 }, (err, address) => {

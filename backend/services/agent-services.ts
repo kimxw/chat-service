@@ -47,8 +47,6 @@ export const addAgentToAllConversations = async (
   });
 };
 
-
-
 export const getAgentChats = async (userId: bigint) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
