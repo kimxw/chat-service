@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 function parseJwt(token) {
@@ -44,6 +44,10 @@ export default function Login() {
       alert("Unknown user role");
     }
   };
+
+  useEffect(() => {
+    localStorage.removeItem("token");
+  }, []);
 
   return (
     <div style={styles.container}>

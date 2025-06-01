@@ -52,10 +52,26 @@ wss.on("connection", (ws, req) => {
     }
 
     const user = jwt.verify(token, process.env.JWT_SECRET!);
+    console.log("verified jwt");
     connectedUsers[user.id] = { role: user.role, socket: ws };
+    console.log(Object.keys(connectedUsers).length);
+
+    const presenceSnapshot = getPresenceSnapshot();
+    ws.send(JSON.stringify({
+      type: "PRESENCE_SNAPSHOT",
+      usersOnline: presenceSnapshot,
+    }));
+    console.log("PRESENCE_SNAPSHOT sent!");
+
+    broadcastPresenceUpdate(user.id, true);
 
     ws.on("message", (msg) => {
       console.log(`Received from ${user.id}:`, msg.toString());
+    });
+
+    ws.on("close", () => {
+      delete connectedUsers[user.id];
+      broadcastPresenceUpdate(user.id, false);
     });
 
     ws.send(
@@ -66,6 +82,30 @@ wss.on("connection", (ws, req) => {
     ws.close(4001, "Invalid token");
   }
 });
+
+
+function broadcastPresenceUpdate(userId, isOnline) {
+  const message = JSON.stringify({
+    type: "PRESENCE_UPDATE",
+    userId,
+    isOnline,
+  });
+
+  Object.values(connectedUsers).forEach(({ socket }) => {
+    if (socket.readyState === WebSocket.OPEN) {
+      socket.send(message);
+    }
+  });
+}
+
+function getPresenceSnapshot() {
+  const snapshot = {};
+  for (const userId in connectedUsers) {
+    snapshot[userId] = true;
+  }
+  return snapshot;
+}
+
 
 // Start server
 fastify.listen({ port: 3001 }, (err, address) => {

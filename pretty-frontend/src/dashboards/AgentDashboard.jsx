@@ -118,6 +118,7 @@ export default function AgentDashboard() {
     }
   }, [lastMessage, token]);
 
+
   return (
     <div style={{ fontFamily: "Arial, sans-serif" }}>
       <Outlet />
@@ -150,6 +151,7 @@ export default function AgentDashboard() {
                     alert(
                       "Waiting for server connection. Please reload the page.",
                     );
+                    window.location.reload();
                     return;
                   }
                   navigate("/chatInterface", {

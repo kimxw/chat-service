@@ -11,7 +11,7 @@ const WebSocketContext = createContext();
 
 export const WebSocketProvider = ({ children }) => {
   const [lastMessage, setLastMessage] = useState(null);
-  const [userId, setUserId] = useState(null); // keep userId in state here
+  const [userId, setUserId] = useState(null);
   const socketRef = useRef(null);
   const [ws, setWs] = useState(null);
   const [isWsConnected, setIsWsConnected] = useState(false);
@@ -34,12 +34,10 @@ export const WebSocketProvider = ({ children }) => {
   useEffect(() => {
     if (!userId) return;
 
-    console.log(userId);
-    console.log("trying to open websocket");
-
+    console.log("Establishing WebSocket for userId:", userId);
     const token = localStorage.getItem("token");
     const socket = new WebSocket(
-      `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`,
+      `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`
     );
 
     socketRef.current = socket;
@@ -47,7 +45,7 @@ export const WebSocketProvider = ({ children }) => {
     socket.onopen = () => {
       console.log("WebSocket opened");
       setIsWsConnected(true);
-      setWs(socket); // <-- Add this line to update ws state!
+      setWs(socket);
     };
 
     socket.onmessage = (event) => {
@@ -62,7 +60,7 @@ export const WebSocketProvider = ({ children }) => {
     socket.onclose = (event) => {
       console.log(`WebSocket closed: ${event.code} ${event.reason}`);
       setIsWsConnected(false);
-      setWs(null); // Clear ws on close
+      setWs(null);
     };
 
     return () => {
@@ -88,5 +86,4 @@ export const WebSocketProvider = ({ children }) => {
 };
 
 export const useWebSocket = () => useContext(WebSocketContext);
-
 export { WebSocketContext };

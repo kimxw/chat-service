@@ -23,6 +23,32 @@ export const addAgentToChat = async (
   }
 };
 
+export const addAgentToAllConversations = async (
+  businessId: bigint,
+  agentUserId: bigint,
+) => {
+  const conversationsWithParticipants = await prisma.conversation.findMany({
+    where: {
+      businessId,
+      participants: { some: {} },
+    },
+    select: { id: true },
+  });
+
+  if (conversationsWithParticipants.length === 0) return;
+
+  await prisma.participant.createMany({
+    data: conversationsWithParticipants.map((conv) => ({
+      conversationId: conv.id,
+      userId: agentUserId,
+      role: "AGENT",
+    })),
+    skipDuplicates: true,
+  });
+};
+
+
+
 export const getAgentChats = async (userId: bigint) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");

@@ -13,10 +13,34 @@ export default function ChatInterface() {
 
   const { ws, lastMessage } = useWebSocket();
 
+  const [onlineUsers, setOnlineUsers] = useState({}); // { userId: true/false }
   const [participants, setParticipants] = useState([]);
   const [typingUsers, setTypingUsers] = useState([]);
   const [isTyping, setIsTyping] = useState(false);
   const typingTimeoutRef = useRef(null);
+
+    const fetchOnlineUsers = async () => {
+        try {
+            const res = await fetch(`http://localhost:3001/presence/online-users`);
+            if (!res.ok) throw new Error("Failed to fetch online users");
+            const data = await res.json();
+            console.log("Online users fetched:", data);
+            setOnlineUsers(
+                data.reduce((acc, user) => {
+                    acc[user.userId] = true;
+                    return acc;
+                }, {})
+                );
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    useEffect(() => {
+        fetchOnlineUsers();
+        console.log(onlineUsers);
+        console.log(onlineUsers);console.log(onlineUsers);console.log(onlineUsers);console.log(onlineUsers);console.log(onlineUsers);
+    }, []);
 
   const markAsReadByCustomer = async (conversationId, messageId) => {
     try {
@@ -79,6 +103,8 @@ export default function ChatInterface() {
     }
   }
 
+  //fetch online users every 10 seconds
+
   useEffect(() => {
     const fetchParticipants = async () => {
       try {
@@ -120,10 +146,16 @@ export default function ChatInterface() {
         }
       }
 
-      console.log(
-        lastMessage.type === "TYPING" &&
-          lastMessage.message.conversationId === conversationId,
-      );
+       if (lastMessage.type === "PRESENCE_UPDATE") {
+            setOnlineUsers((prev) => ({
+            ...prev,
+            [lastMessage.userId]: lastMessage.isOnline,
+            }));
+        }
+
+        if (lastMessage.type === "PRESENCE_SNAPSHOT") {
+            setOnlineUsers(lastMessage.usersOnline);
+        }
 
       if (
         lastMessage.type === "TYPING" &&
@@ -307,12 +339,21 @@ export default function ChatInterface() {
         <div className="header-title">{businessName} Chat Support</div>
         <div className="participants-list">
           {participants.map((participant, index) => (
-            <span key={participant.id} className="participant-name">
-              {participant.user?.username || "Unknown"} (
-              {participant.role.toLowerCase()})
-              {index < participants.length - 1 && ", "}
+            <span key={participant.id} style={{ display: "inline-flex", alignItems: "center", marginRight: 8 }}>
+                <div
+                style={{
+                    width: 10,
+                    height: 10,
+                    borderRadius: "50%",
+                    backgroundColor: onlineUsers[participant.user.id] ? "green" : "red",
+                    marginRight: 4,
+                }}
+                ></div>
+                {participant.user?.username || "Unknown"} ({participant.role.toLowerCase()})
+                {index < participants.length - 1 && <span>, </span>}
             </span>
-          ))}
+            ))}
+
         </div>
       </div>
 

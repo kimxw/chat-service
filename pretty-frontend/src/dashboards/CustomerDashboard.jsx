@@ -113,6 +113,16 @@ export default function CustomerDashboard() {
     }
   }
 
+    useEffect(() => {
+      const hasReloaded = sessionStorage.getItem("hasReloadedOnce");
+      if (!hasReloaded) {
+          sessionStorage.setItem("hasReloadedOnce", "true");
+          window.location.reload(); // Force one reload
+      }
+        console.log(sessionStorage.getItem("hasReloadedOnce"));
+
+    }, []);
+
   return (
     <div style={{ fontFamily: "Arial, sans-serif", margin: "2rem" }}>
       <header className="top-banner">
@@ -151,6 +161,7 @@ export default function CustomerDashboard() {
                     alert(
                       "Waiting for server connection. Please reload the page.",
                     );
+                    window.location.reload();
                     return;
                   }
                   navigate("/chatInterface", {
