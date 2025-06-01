@@ -111,6 +111,9 @@ model Message {
 
   attachments Attachment[] // optional rich-media table (see below)
 
+  readByCustomer Boolean @default(false)
+  readByAgents   Boolean @default(false)
+
   /// *Optimised for chronological fetches & sender filtering*
   @@index([conversationId, createdAt])
   @@index([senderId, createdAt])
