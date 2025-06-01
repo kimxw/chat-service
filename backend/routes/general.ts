@@ -4,6 +4,7 @@ import { markMessageReadByAgent, markMessageReadByCustomer } from "./messages";
 import { getParticipantListOfConversation } from "../services/message-service";
 import serialiseBigInts from "../utils/serialiser";
 import { connectedUsers } from "../utils/connections";
+import { getAllBusiness } from "../services/business-services";
 
 export async function generalUserServicesRoutes(fastify: FastifyInstance) {
   fastify.get("/presence/online-users", async (request, reply) => {
@@ -127,4 +128,14 @@ export async function generalUserServicesRoutes(fastify: FastifyInstance) {
       res.status(500).send({ success: false, error: error.message });
     }
   });
+
+   fastify.get("/getAllBusinesses", async (request, reply) => {
+
+      const businesses = await getAllBusiness();
+  
+      return reply.send({
+        success: true,
+        businesses: serialiseBigInts(businesses),
+      });
+    });
 }

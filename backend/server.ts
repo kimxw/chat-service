@@ -7,7 +7,7 @@ import { registerRoutes } from "./routes/register";
 import { clientChatRoutes } from "./routes/client-chats";
 import { agentChatRoutes } from "./routes/agent-chats";
 import { messageRoutes } from "./routes/messages";
-import { generalUserServicesRoutes } from "./routes/general-user";
+import { generalUserServicesRoutes } from "./routes/general";
 import * as dotenv from "dotenv";
 import { connectedUsers } from "./utils/connections";
 

@@ -12,6 +12,7 @@ export default function CustomerDashboard() {
   });
   const [conversations, setConversations] = useState([]);
   const [businessId, setBusinessId] = useState("");
+  const [businesses, setBusinesses] = useState([]);
 
   const { lastMessage, userId, isWsConnected } = useWebSocket(); // Get WebSocket tools from context
   const navigate = useNavigate();
@@ -114,13 +115,22 @@ export default function CustomerDashboard() {
   }
 
   useEffect(() => {
-    const hasReloaded = sessionStorage.getItem("hasReloadedOnce");
-    if (!hasReloaded) {
-      sessionStorage.setItem("hasReloadedOnce", "true");
-      window.location.reload(); // Force one reload
-    }
-    console.log(sessionStorage.getItem("hasReloadedOnce"));
-  }, []);
+    const fetchBusinesses = async () => {
+        try {
+        const response = await fetch("http://localhost:3001/getAllBusinesses");
+
+        const data = await response.json();
+        console.log(data);
+        if (data.success) {
+            setBusinesses(data.businesses);
+        }
+        } catch (error) {
+            console.error("Error fetching businesses:", error);
+        }
+  };
+
+  fetchBusinesses();
+}, []);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", margin: "2rem" }}>
@@ -136,16 +146,26 @@ export default function CustomerDashboard() {
 
       <div className="page-content">
         <h2>Conversations</h2>
-
+        <div style={{ paddingBottom: '10px' }}>
         <form id="create-convo-form" onSubmit={handleCreateConversation}>
-          <input
-            type="text"
-            placeholder="Enter Business ID"
-            value={businessId}
-            onChange={(e) => setBusinessId(e.target.value)}
-          />
-          <button type="submit">Create Conversation</button>
+            <select
+                value={businessId}
+                onChange={(e) => setBusinessId(e.target.value)}
+                required
+                style={{ marginRight: '10px' }}
+            >
+                <option value="" disabled>Select a business</option>
+                {businesses.map((business) => (
+                <option key={business.id} value={business.id}>
+                    {business.name} {/* or whatever field you want to show */}
+                </option>
+                ))}
+            </select>
+
+            <button type="submit">Create Conversation</button>
         </form>
+        </div>
+
 
         <div id="results">
           {conversations.length === 0 ? (

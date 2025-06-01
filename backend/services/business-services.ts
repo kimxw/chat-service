@@ -5,3 +5,7 @@ export const getBusiness = async (businessId: bigint) => {
     where: { id: businessId },
   });
 };
+
+export const getAllBusiness = async() => {
+  return await prisma.business.findMany();
+};
