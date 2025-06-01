@@ -46,5 +46,5 @@ export async function agentChatRoutes(fastify: FastifyInstance) {
       return reply.status(500).send({ success: false, message: error.message || "Unknown error" });
     }
   });
-  
+
 }

@@ -4,6 +4,55 @@ import prisma from '../utils/db';
 import serialiseBigInts from '../utils/serialiser';
 import { connectedUsers } from '../utils/connections';
 
+export async function markMessageReadByCustomer(conversationId: bigint, messageId: bigint) {
+  const updatedMessage = await prisma.message.update({
+    where: { id: messageId },
+    data: { readByCustomer: true },
+  });
+
+  const participantList = await getParticipantListOfConversation(conversationId);
+  const participantUserIds = participantList.map((p) => p.userId.toString());
+  const serialisedMessage = serialiseBigInts(updatedMessage);
+
+  for (const [userId, user] of Object.entries(connectedUsers)) {
+    if (user?.socket?.readyState === 1 && participantUserIds.includes(userId)) {
+      user.socket.send(
+        JSON.stringify({
+          type: "UPDATED_READ_STATUS_OF_CUSTOMER",
+          message: serialisedMessage,
+        })
+      );
+    }
+  }
+
+  return serialisedMessage;
+}
+
+export async function markMessageReadByAgent(conversationId: bigint, messageId: bigint) {
+  const updatedMessage = await prisma.message.update({
+    where: { id: messageId },
+    data: { readByAgents: true },
+  });
+
+  const participantList = await getParticipantListOfConversation(conversationId);
+  const participantUserIds = participantList.map((p) => p.userId.toString());
+  const serialisedMessage = serialiseBigInts(updatedMessage);
+
+  for (const [userId, user] of Object.entries(connectedUsers)) {
+    if (user?.socket?.readyState === 1 && participantUserIds.includes(userId)) {
+      user.socket.send(
+        JSON.stringify({
+          type: "UPDATED_READ_STATUS_OF_AGENTS",
+          message: serialisedMessage,
+        })
+      );
+    }
+  }
+
+  return serialisedMessage;
+}
+
+
 export async function messageRoutes(app: FastifyInstance) {
 
   app.get('/conversations/:conversationId/messages', async (request, reply) => {
@@ -128,37 +177,11 @@ app.post<{
 
 
 app.patch<{
-  Params: { conversationId: string; messageId: string }
+  Params: { conversationId: string; messageId: string };
 }>('/conversations/:conversationId/messages/:messageId/read/customer', async (request, reply) => {
   const { conversationId, messageId } = request.params;
   try {
-    console.log("TRYING TO UPDATE CUSTOMER STATUS");
-    const updatedMessage = await prisma.message.update({
-      where: { id: BigInt(messageId) },
-      data: { readByCustomer: true },
-    });
-    console.log("UPDATED CUSTOMER STATUS IN BACKEND");
-
-    const participantList = await getParticipantListOfConversation(BigInt(conversationId));
-    const participantUserIds = participantList.map(participant => participant.userId.toString());
-    console.log(participantUserIds);
-    const serialisedMessage = serialiseBigInts(updatedMessage);
-    
-    // Notify all participants in the chat
-    for (const [userId, user] of Object.entries(connectedUsers)) {
-      if (
-        user?.socket?.readyState === 1 &&
-        participantUserIds.includes(userId)
-      ) {
-        user.socket.send(JSON.stringify({
-          type: "UPDATED_READ_STATUS_OF_CUSTOMER",
-          message: serialisedMessage,
-        }));
-      }
-    }
-
-    console.log("BROADCASTED MESSAGE ON CUSTOMER STATUS");
-
+    const serialisedMessage = await markMessageReadByCustomer(BigInt(conversationId), BigInt(messageId));
     reply.send({ success: true, message: serialisedMessage });
   } catch (err) {
     console.error(err);
@@ -166,40 +189,19 @@ app.patch<{
   }
 });
 
-
 app.patch<{
-  Params: { conversationId: string; messageId: string }
+  Params: { conversationId: string; messageId: string };
 }>('/conversations/:conversationId/messages/:messageId/read/agent', async (request, reply) => {
   const { conversationId, messageId } = request.params;
   try {
-    const updatedMessage = await prisma.message.update({
-      where: { id: BigInt(messageId) },
-      data: { readByAgents: true },
-    });
-
-    const participantList = await getParticipantListOfConversation(BigInt(conversationId));
-    const participantUserIds = participantList.map(participant => participant.userId.toString());
-    const serialisedMessage = serialiseBigInts(updatedMessage);
-    
-    // Notify all participants in the chat
-    for (const [userId, user] of Object.entries(connectedUsers)) {
-      if (
-        user?.socket?.readyState === 1 &&
-        participantUserIds.includes(userId)
-      ) {
-        user.socket.send(JSON.stringify({
-          type: "UPDATED_READ_STATUS_OF_AGENTS",
-          message: serialisedMessage,
-        }));
-      }
-    }
-
+    const serialisedMessage = await markMessageReadByAgent(BigInt(conversationId), BigInt(messageId));
     reply.send({ success: true, message: serialisedMessage });
   } catch (err) {
     console.error(err);
     reply.status(500).send({ error: 'Failed to mark message as read by agent' });
   }
 });
+
 
 app.get<{
   Params: { messageId: string }

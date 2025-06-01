@@ -46,17 +46,23 @@ export default function ChatInterface() {
     }
   };
 
-    const fetchMessageById = async (messageId) => {
+    async function markAllAsRead(conversationId, role) {
         try {
-            const res = await fetch(`http://localhost:3001/messages/${messageId}`);
-            if (!res.ok) throw new Error('Failed to fetch message');
-            const data = await res.json();
-            return data.message;
+            const response = await fetch(`http://localhost:3001/conversations/${conversationId}/markAllAsRead/${role}`, {
+            method: 'PATCH',
+            });
+
+            if (!response.ok) {
+            console.error("Failed to mark messages as read");
+            return;
+            }
+
+            const data = await response.json();
+            console.log(`Marked ${data.count} messages as read for ${role}`);
         } catch (err) {
-            console.error(err);
-            return null;
+            console.error("Error calling markAllAsRead:", err);
         }
-    };
+        }
 
 
     useEffect(() => {
@@ -99,9 +105,15 @@ export default function ChatInterface() {
                 lastMessage.message.conversationId === conversationId
             ) {
                 setMessages((prev) => {
-                    return [...prev, lastMessage.message];
+                    const exists = prev.some(msg => msg.id === lastMessage.message.id);
+                    if (exists) {
+                        return prev.map(msg => msg.id === lastMessage.message.id ? lastMessage.message : msg);
+                    } else {
+                        return [...prev, lastMessage.message];
+                    }
                 });
             }
+
         };
 
         processLastMessage();
@@ -143,6 +155,7 @@ export default function ChatInterface() {
       }
     };
 
+    markAllAsRead(conversationId, currentRole);
     fetchMessages();
   }, [conversationId]);
 
