@@ -148,6 +148,7 @@ export default function AgentDashboard() {
                     state: {
                       currentUserId: userInfo.id,
                       conversationId: conversation.id,
+                      currentRole: "AGENT",
                     },
                   })
                 }

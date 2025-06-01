@@ -98,3 +98,14 @@
 .chat-input-container button:hover {
   background-color: #5c6bc0;
 }
+
+.unread-message {
+  background-color: #ffecec; /* light red background */
+}
+
+.unread-tag {
+  color: red;
+  margin-left: 8px;
+  font-weight: bold;
+  font-size: 0.9em;
+}

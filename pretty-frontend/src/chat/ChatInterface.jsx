@@ -5,24 +5,108 @@ import { useWebSocket } from "../WebSocketContext";
 
 export default function ChatInterface() {
   const location = useLocation();
-  const { currentUserId, conversationId } = location.state || {};
+  const { currentUserId, conversationId, currentRole } = location.state || {};
   //   console.log(`currentUserRole -> ${currentUserRole}`)
   //   console.log(`currentUserId -> ${currentUserId}`)
   //   console.log(`conversationId -> ${conversationId}`)
 
   const { lastMessage } = useWebSocket();
 
-  useEffect(() => {
-    if (!lastMessage) return;
+  const markAsReadByCustomer = async (conversationId, messageId) => {
+    try {
+        const res = await fetch(`http://localhost:3001/conversations/${conversationId}/messages/${messageId}/read/customer`, {
+        method: 'PATCH',
+        });
 
-    if (
-      lastMessage.type === "NEW_MESSAGE" &&
-      lastMessage.message.conversationId === conversationId
-    ) {
-      console.log("NEW_MESSAGE received via WebSocket:", lastMessage.message);
-      setMessages((prev) => [...prev, lastMessage.message]);
+        if (!res.ok) {
+        throw new Error('Failed to mark message as read by customer');
+        }
+
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error(err);
     }
-  }, [lastMessage, conversationId]);
+  };
+
+  const markAsReadByAgent = async (conversationId, messageId) => {
+    try {
+        const res = await fetch(`http://localhost:3001/conversations/${conversationId}/messages/${messageId}/read/agent`, {
+        method: 'PATCH',
+        });
+
+        if (!res.ok) {
+        throw new Error('Failed to mark message as read by agent');
+        }
+
+        const data = await res.json();
+        return data;
+    } catch (err) {
+        console.error(err);
+    }
+  };
+
+    const fetchMessageById = async (messageId) => {
+        try {
+            const res = await fetch(`http://localhost:3001/messages/${messageId}`);
+            if (!res.ok) throw new Error('Failed to fetch message');
+            const data = await res.json();
+            return data.message;
+        } catch (err) {
+            console.error(err);
+            return null;
+        }
+    };
+
+
+    useEffect(() => {
+        if (!lastMessage) return;
+
+        const processLastMessage = async () => {
+            console.log(lastMessage);
+            if (
+                (lastMessage.type === "UPDATED_READ_STATUS_OF_AGENTS" && currentRole === "CUSTOMER") ||
+                (lastMessage.type === "UPDATED_READ_STATUS_OF_CUSTOMER" && currentRole === "AGENT")
+            ) {
+                if (lastMessage.message.conversationId === conversationId) {
+                    const updatedMessage = lastMessage.message;
+                    setMessages(prev =>
+                    prev.map(msg =>
+                        msg.id === updatedMessage.id ? { ...msg, ...updatedMessage } : msg
+                    )
+                    );
+                }
+            }
+
+
+                
+            if (
+                lastMessage.type === "NEW_MESSAGE_BY_CUSTOMER" &&
+                lastMessage.message.conversationId === conversationId &&
+                currentRole === "AGENT"
+            ) {
+                await markAsReadByAgent(conversationId, lastMessage.message.id);
+            } else if (
+                lastMessage.type === "NEW_MESSAGE_BY_AGENT" &&
+                lastMessage.message.conversationId === conversationId &&
+                currentRole === "CUSTOMER"
+            ) {
+                await markAsReadByCustomer(conversationId, lastMessage.message.id);
+            }
+
+            if (
+                (lastMessage.type === "NEW_MESSAGE_BY_CUSTOMER" || lastMessage.type === "NEW_MESSAGE_BY_AGENT") &&
+                lastMessage.message.conversationId === conversationId
+            ) {
+                setMessages((prev) => {
+                    return [...prev, lastMessage.message];
+                });
+            }
+        };
+
+        processLastMessage();
+    }, [lastMessage, conversationId, currentRole]);
+
 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
@@ -40,6 +124,7 @@ export default function ChatInterface() {
         const res = await fetch(
           `http://localhost:3001/conversations/${conversationId.toString()}/messages`,
         );
+
         if (!res.ok) throw new Error("Failed to fetch messages");
         const data = await res.json();
         setMessages(
@@ -49,6 +134,8 @@ export default function ChatInterface() {
             body: msg.body || "",
             createdAt: msg.createdAt,
             fileUrl: msg.fileUrl,
+            readByCustomer: msg.readByCustomer,
+            readByAgents: msg.readByAgents,
           })),
         );
       } catch (err) {
@@ -72,6 +159,7 @@ export default function ChatInterface() {
             senderId: currentUserId.toString(), // or currentUserId if string
             body: input.trim(),
             contentType: "TEXT",
+            currentRole: currentRole,
           }),
         },
       );
@@ -79,7 +167,6 @@ export default function ChatInterface() {
       if (!response.ok) throw new Error("Failed to send message");
 
       const newMessage = await response.json();
-      console.log(newMessage);
       setInput("");
     } catch (err) {
       console.error(err);
@@ -100,6 +187,8 @@ export default function ChatInterface() {
       <div className="chat-messages">
         {messages.map((msg) => {
           const isOwnMessage = msg.sender.id === currentUserId;
+          const isUnread = currentRole === "CUSTOMER" ? !msg.readByAgents : !msg.readByCustomer;
+
           return (
             <div
               key={msg.id}
@@ -107,7 +196,10 @@ export default function ChatInterface() {
                 isOwnMessage ? "own-message" : "other-message"
               }`}
             >
-              <div className="sender-label">{msg.sender.username}</div>
+              <div className="sender-label">
+                {msg.sender.username}
+                {isUnread && <span className="unread-tag">🔴 Unread</span>}
+              </div>
               <div
                 className={`chat-message ${isOwnMessage ? "right" : "left"}`}
               >

@@ -151,6 +151,7 @@ export default function CustomerDashboard() {
                     state: {
                       currentUserId: userInfo.id,
                       conversationId: conversation.id,
+                      currentRole: "CUSTOMER",
                     },
                   });
                 }}
