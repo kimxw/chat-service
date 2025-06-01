@@ -1,6 +1,8 @@
 import { FastifyInstance } from "fastify";
 import prisma from "../utils/db";
 import { markMessageReadByAgent, markMessageReadByCustomer } from "./messages";
+import { getParticipantListOfConversation } from "../services/message-service";
+import serialiseBigInts from "../utils/serialiser";
 
 export async function generalUserServicesRoutes(fastify: FastifyInstance) {
   fastify.patch<{
@@ -49,4 +51,21 @@ export async function generalUserServicesRoutes(fastify: FastifyInstance) {
       }
     },
   );
+
+    fastify.get("/conversations/:conversationId/participants", async (request, reply) => {
+        try {
+            const { conversationId } = request.params as { conversationId: string };
+            const participants = await getParticipantListOfConversation(BigInt(conversationId));
+            console.log(serialiseBigInts(participants));
+            reply.send(serialiseBigInts(participants));
+        } catch (error) {
+            console.error(
+                "Error in POST /conversations/:conversationId/messages:",
+                error,
+            );
+                return reply.status(500).send({ error: "Internal server error" });
+            }
+        });
+
+
 }

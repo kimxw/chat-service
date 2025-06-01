@@ -42,8 +42,18 @@ export const getParticipantListOfConversation = async (
     where: {
       conversationId: conversationId,
     },
+    include: {
+      user: {
+        select: {
+          id: true,
+          username: true,
+          email: true, 
+        },
+      },
+    },
   });
 };
+
 
 export const createNewMessage = async (
   conversationId: bigint,

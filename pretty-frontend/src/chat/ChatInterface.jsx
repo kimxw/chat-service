@@ -13,6 +13,8 @@ export default function ChatInterface() {
 
   const { ws, lastMessage } = useWebSocket();
 
+  const [participants, setParticipants] = useState([]);
+
   const markAsReadByCustomer = async (conversationId, messageId) => {
     try {
       const res = await fetch(
@@ -73,6 +75,24 @@ export default function ChatInterface() {
       console.error("Error calling markAllAsRead:", err);
     }
   }
+
+  useEffect(() => {
+  const fetchParticipants = async () => {
+    try {
+        const res = await fetch(`http://localhost:3001/conversations/${conversationId}/participants`);
+        if (!res.ok) throw new Error("Failed to fetch participants");
+        const data = await res.json();
+        console.log("Fetched participants:", data); // Optional: Debugging
+        setParticipants(data);
+    } catch (err) {
+        console.error(err);
+    }
+    };
+
+
+  fetchParticipants();
+}, [conversationId]);
+
 
   useEffect(() => {
     if (!lastMessage) return;
@@ -205,7 +225,20 @@ export default function ChatInterface() {
 
   return (
     <div className="chat-container">
-      <div className="chat-header">Chat Support</div>
+      <div className="chat-header">
+        <div className="header-title">
+            {businessName} Chat Support
+        </div>
+        <div className="participants-list">
+            {participants.map((participant, index) => (
+            <span key={participant.id} className="participant-name">
+                {participant.user?.username || "Unknown"} ({participant.role.toLowerCase()})
+                {index < participants.length - 1 && ", "}
+            </span>
+            ))}
+        </div>
+      </div>
+
 
       <div className="chat-messages">
         {messages.map((msg) => {

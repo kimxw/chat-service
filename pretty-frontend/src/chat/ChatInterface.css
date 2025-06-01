@@ -10,14 +10,31 @@
 }
 
 .chat-header {
+  display: flex;
+  flex-direction: column; /* Stack title and participants */
+  align-items: flex-start; /* Left align both */
   padding: 12px 16px;
   background-color: #1f1f1f;
   color: #ffffff;
-  font-size: 1.2rem;
-  font-weight: bold;
-  text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
 }
+ 
+
+.header-title {
+  font-weight: bold;
+  font-size: 1.2rem;
+  margin-bottom: 4px;
+}
+
+.participants-list {
+  font-size: 0.9rem;
+  color: #555;
+}
+
+.participant-name {
+  display: inline;
+}
+
 
 .chat-messages {
   flex: 1;
