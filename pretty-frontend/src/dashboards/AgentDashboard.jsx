@@ -10,7 +10,9 @@ export default function AgentDashboard() {
     business: "Loading...",
   });
   const [conversations, setConversations] = useState([]);
-  const { sendMessage, lastMessage, userId } = useContext(WebSocketContext); // Get the WebSocket tools
+  const { sendMessage, lastMessage, userId, isWsConnected } =
+    useContext(WebSocketContext); // Get the WebSocket tools
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -143,15 +145,20 @@ export default function AgentDashboard() {
               <div
                 key={conversation.id}
                 className="conversation-card"
-                onClick={() =>
+                onClick={() => {
+                  if (!isWsConnected) {
+                    alert("Connecting to chat server. Please wait...");
+                    return;
+                  }
                   navigate("/chatInterface", {
                     state: {
                       currentUserId: userInfo.id,
                       conversationId: conversation.id,
                       currentRole: "AGENT",
+                      businessName: userInfo.business,
                     },
-                  })
-                }
+                  });
+                }}
                 style={{ cursor: "pointer" }}
               >
                 <div className="conversation-type-badge">
@@ -167,9 +174,10 @@ export default function AgentDashboard() {
 
                 <button
                   className="delete-button"
-                  onClick={() =>
-                    deleteChatForAllUsers(conversation.id.toString())
-                  }
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    deleteChatForAllUsers(conversation.id.toString());
+                  }}
                 >
                   <img
                     src="/trashcan.png"

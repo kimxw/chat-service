@@ -8,12 +8,14 @@ import { connectedUsers } from "../utils/connections";
 export async function clientChatRoutes(fastify: FastifyInstance) {
   fastify.get("/getClientChats", async (request, reply) => {
     const { userId } = verifyJWT(request, reply);
-      
-    const userAsParticipantList = await getClientChats(  //conversations is trype array
+
+    const userAsParticipantList = await getClientChats(
+      //conversations is trype array
       userId,
     );
 
-    const serialisedUserAsParticipantList = userAsParticipantList.map(serialiseBigInts)
+    const serialisedUserAsParticipantList =
+      userAsParticipantList.map(serialiseBigInts);
 
     return reply.send({
       success: true,
@@ -34,22 +36,25 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
           .status(400)
           .send({ error: `Business with id ${businessId} does not exist` });
       }
-      
+
       const { userId } = verifyJWT(request, reply);
-      
+
       const newParticipantEntry = await createClientChat(
         BigInt(businessId),
         userId,
       );
 
-      const serializedNewParticipantEntry = serialiseBigInts(newParticipantEntry);
+      const serializedNewParticipantEntry =
+        serialiseBigInts(newParticipantEntry);
 
-      Object.values(connectedUsers).forEach(user => {
-        if (user?.socket?.readyState === 1 && user.role === 'AGENT') {
-          user.socket.send(JSON.stringify({
-            type: "REFRESH_CHATS",
-            message: "A new chat has been created. Please refresh.",
-          }));
+      Object.values(connectedUsers).forEach((user) => {
+        if (user?.socket?.readyState === 1 && user.role === "AGENT") {
+          user.socket.send(
+            JSON.stringify({
+              type: "REFRESH_CHATS",
+              message: "A new chat has been created. Please refresh.",
+            }),
+          );
         }
       });
 

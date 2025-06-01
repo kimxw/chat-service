@@ -13,6 +13,8 @@ export const WebSocketProvider = ({ children }) => {
   const [lastMessage, setLastMessage] = useState(null);
   const [userId, setUserId] = useState(null); // keep userId in state here
   const socketRef = useRef(null);
+  const [ws, setWs] = useState(null);
+  const [isWsConnected, setIsWsConnected] = useState(false);
 
   // Decode token once on mount to set userId
   useEffect(() => {
@@ -42,6 +44,7 @@ export const WebSocketProvider = ({ children }) => {
 
     socketRef.current.onopen = () => {
       console.log("WebSocket opened");
+      setIsWsConnected(true);
     };
 
     socketRef.current.onmessage = (event) => {
@@ -55,6 +58,7 @@ export const WebSocketProvider = ({ children }) => {
 
     socketRef.current.onclose = (event) => {
       console.log(`WebSocket closed: ${event.code} ${event.reason}`);
+      setIsWsConnected(false);
     };
 
     return () => {
@@ -71,7 +75,9 @@ export const WebSocketProvider = ({ children }) => {
   };
 
   return (
-    <WebSocketContext.Provider value={{ lastMessage, sendMessage, userId }}>
+    <WebSocketContext.Provider
+      value={{ ws, lastMessage, sendMessage, userId, isWsConnected }}
+    >
       {children}
     </WebSocketContext.Provider>
   );

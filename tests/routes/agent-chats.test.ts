@@ -12,7 +12,7 @@ jest.setTimeout(10000);
 require("dotenv").config({ path: ".env.test" });
 
 const prisma = new PrismaClient();
-const supertest = require('supertest');
+const supertest = require("supertest");
 
 describe("Agent Chats API", () => {
   let fastify;

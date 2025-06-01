@@ -36,7 +36,7 @@ messageRoutes(fastify);
 generalUserServicesRoutes(fastify);
 
 function getRawUrl(req: any): string {
-  return req?.raw?.req?.url || req?.raw?.url || req?.url || '';
+  return req?.raw?.req?.url || req?.raw?.url || req?.url || "";
 }
 
 // WebSocket connection
@@ -58,13 +58,14 @@ wss.on("connection", (ws, req) => {
       console.log(`Received from ${user.id}:`, msg.toString());
     });
 
-    ws.send(JSON.stringify({ type: "WELCOME", message: "WebSocket connected!" }));
+    ws.send(
+      JSON.stringify({ type: "WELCOME", message: "WebSocket connected!" }),
+    );
   } catch (err) {
     console.error("WebSocket auth error:", err);
     ws.close(4001, "Invalid token");
   }
 });
-
 
 // Start server
 fastify.listen({ port: 3001 }, (err, address) => {

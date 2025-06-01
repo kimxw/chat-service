@@ -13,7 +13,7 @@ export default function CustomerDashboard() {
   const [conversations, setConversations] = useState([]);
   const [businessId, setBusinessId] = useState("");
 
-  const { lastMessage, userId } = useWebSocket(); // Get WebSocket tools from context
+  const { lastMessage, userId, isWsConnected } = useWebSocket(); // Get WebSocket tools from context
   const navigate = useNavigate();
 
   // Helper to fetch conversations
@@ -147,13 +147,18 @@ export default function CustomerDashboard() {
                 key={conversation.id}
                 className="conversation-card"
                 onClick={() => {
-                  navigate("/chatInterface", {
+                    if (!isWsConnected) {
+                        alert("Connecting to chat server. Please wait...");
+                        return;
+                    }
+                    navigate("/chatInterface", {
                     state: {
                       currentUserId: userInfo.id,
                       conversationId: conversation.id,
                       currentRole: "CUSTOMER",
+                      businessName: conversation.business.name,
                     },
-                  });
+                  })
                 }}
                 style={{ cursor: "pointer" }}
               >

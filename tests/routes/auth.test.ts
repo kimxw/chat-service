@@ -84,7 +84,7 @@ describe("Auth endpoints", () => {
     const response = await supertest(fastify.server)
       .get("/getUserDetails")
       .set("Authorization", `Bearer validToken`);
-    
+
     expect(response.status).toBe(200);
     expect(response.body).toMatchObject({
       username: "authtestuser",

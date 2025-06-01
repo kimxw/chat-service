@@ -2,9 +2,9 @@ import prisma from "../utils/db";
 
 export const addAgentToChat = async (
   businessId: bigint,
-  conversationId : bigint,
+  conversationId: bigint,
 ) => {
-const agents = await prisma.user.findMany({
+  const agents = await prisma.user.findMany({
     where: {
       businessId: businessId,
       role: "AGENT",
@@ -13,7 +13,7 @@ const agents = await prisma.user.findMany({
 
   if (agents.length > 0) {
     await prisma.participant.createMany({
-      data: agents.map(agent => ({
+      data: agents.map((agent) => ({
         conversationId: conversationId,
         userId: agent.id,
         role: "AGENT",
@@ -21,11 +21,9 @@ const agents = await prisma.user.findMany({
       skipDuplicates: true, // Just in case!
     });
   }
-}
+};
 
-export const getAgentChats = async (
-  userId: bigint,
-) => {
+export const getAgentChats = async (userId: bigint) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
   if (user.role !== "AGENT")
@@ -41,13 +39,13 @@ export const getAgentChats = async (
       },
     },
   });
-  
+
   return participants;
 };
 
 export async function removeAllParticipantsFromConversation(
   conversationId: bigint,
-  userId: bigint
+  userId: bigint,
 ) {
   // Check if the user is a participant
   const participant = await prisma.participant.findUnique({
@@ -65,5 +63,8 @@ export async function removeAllParticipantsFromConversation(
     where: { conversationId },
   });
 
-  return { success: true, message: "All participants removed from conversation." };
+  return {
+    success: true,
+    message: "All participants removed from conversation.",
+  };
 }

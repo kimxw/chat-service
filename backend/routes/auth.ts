@@ -61,15 +61,20 @@ export async function authRoutes(fastify: FastifyInstance) {
       }
 
       const business = user.businessId
-      ? await prisma.business.findUnique({ where: { id: user.businessId } })
-      : null;
+        ? await prisma.business.findUnique({ where: { id: user.businessId } })
+        : null;
 
-
-      reply.send(serialiseBigInts({ id: user.id, username: user.username, role: user.role, businessName: business?.name }));
+      reply.send(
+        serialiseBigInts({
+          id: user.id,
+          username: user.username,
+          role: user.role,
+          businessName: business?.name,
+        }),
+      );
     } catch (err: any) {
       console.error(err);
       reply.code(500).send({ error: "Internal server error" });
     }
   });
-
 }
