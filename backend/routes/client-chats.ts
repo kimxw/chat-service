@@ -28,7 +28,7 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
         conversationType: string;
       };
       if (!businessId) {
-        return reply.code(400).send({ message: "Missing businessId" });
+        return reply.code(400).send({ error: "Missing businessId" });
       }
       const parsedBusinessId = BigInt(businessId);
       const business = await getBusiness(parsedBusinessId);
@@ -36,6 +36,10 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
         return reply
           .status(400)
           .send({ error: `Business with id ${businessId} does not exist` });
+      }
+
+      if (!conversationType) {
+        return reply.code(400).send({ error: "Missing conversationType" });
       }
 
       const { userId } = verifyJWT(request, reply);

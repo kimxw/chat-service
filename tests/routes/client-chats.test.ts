@@ -68,7 +68,7 @@ describe("Client Chats API", () => {
     const response = await supertest(fastify.server)
       .post("/createClientChat") // updated endpoint
       .set("Authorization", `Bearer dummyToken`)
-      .send({ businessId: business.id.toString() });
+      .send({ businessId: business.id.toString(), conversationType: "DIRECT" });
 
     expect(response.status).toBe(200);
 
@@ -95,10 +95,20 @@ describe("Client Chats API", () => {
     const response = await supertest(fastify.server)
       .post("/createClientChat")
       .set("Authorization", `Bearer dummyToken`)
-      .send({});
+      .send({ conversationType: "DIRECT" });
 
     expect(response.status).toBe(400);
-    expect(response.body.message).toMatch(/Missing businessId/i);
+    expect(response.body.error).toMatch(/Missing businessId/i);
+  });
+
+  it("should return 400 for missing conversationType", async () => {
+    const response = await supertest(fastify.server)
+      .post("/createClientChat")
+      .set("Authorization", `Bearer dummyToken`)
+      .send({ businessId: business.id.toString() });
+
+    expect(response.status).toBe(400);
+    expect(response.body.error).toMatch(/Missing conversationType/i);
   });
 
   it("should return 400 for non-existing businessId", async () => {
@@ -117,7 +127,7 @@ describe("Client Chats API", () => {
     const createResponse = await supertest(fastify.server)
       .post("/createClientChat")
       .set("Authorization", `Bearer dummyToken`)
-      .send({ businessId: business.id.toString() });
+      .send({ businessId: business.id.toString(), conversationType: "DIRECT"});
 
     expect(createResponse.status).toBe(200);
 
