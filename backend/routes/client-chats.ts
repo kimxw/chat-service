@@ -4,15 +4,13 @@ import { getBusiness } from "../services/business-services";
 import { verifyJWT } from "../utils/verifyJWT";
 import serialiseBigInts from "../utils/serialiser";
 import { connectedUsers } from "../utils/connections";
+import { ConversationType } from "@prisma/client";
 
 export async function clientChatRoutes(fastify: FastifyInstance) {
   fastify.get("/getClientChats", async (request, reply) => {
     const { userId } = verifyJWT(request, reply);
 
-    const userAsParticipantList = await getClientChats(
-      //conversations is trype array
-      userId,
-    );
+    const userAsParticipantList = await getClientChats(userId);
 
     const serialisedUserAsParticipantList =
       userAsParticipantList.map(serialiseBigInts);
@@ -25,7 +23,10 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
 
   fastify.post("/createClientChat", async (request, reply) => {
     try {
-      const { businessId } = request.body as { businessId: string };
+      const { businessId, conversationType } = request.body as {
+        businessId: string;
+        conversationType: string;
+      };
       if (!businessId) {
         return reply.code(400).send({ message: "Missing businessId" });
       }
@@ -40,8 +41,9 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
       const { userId } = verifyJWT(request, reply);
 
       const newParticipantEntry = await createClientChat(
-        BigInt(businessId),
+        parsedBusinessId,
         userId,
+        conversationType.toUpperCase() as ConversationType, // This is the key!
       );
 
       const serializedNewParticipantEntry =
@@ -61,7 +63,7 @@ export async function clientChatRoutes(fastify: FastifyInstance) {
       reply.send({ newParticipantEntry: serializedNewParticipantEntry });
     } catch (err: any) {
       console.error(err);
-      reply.code(500).send("Internal server error RAAA");
+      reply.code(500).send("Internal server error");
     }
   });
 }

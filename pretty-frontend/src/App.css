@@ -119,6 +119,17 @@
   user-select: none;
 }
 
+.direct {
+  background-color: #007bff; /* blue */
+}
+
+.support-room {
+  background-color: #28a745; /* green */
+}
+
+.community {
+  background-color: #ffc107; /* yellow */
+}
 
 .business-name {
   font-size: 30px;

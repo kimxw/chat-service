@@ -1,7 +1,12 @@
+import { ConversationType } from "@prisma/client";
 import prisma from "../utils/db";
 import { addAgentToChat } from "./agent-services";
 
-export const createClientChat = async (businessId: bigint, userId: bigint) => {
+export const createClientChat = async (
+  businessId: bigint,
+  userId: bigint,
+  conversationType: ConversationType,
+) => {
   const user = await prisma.user.findUnique({ where: { id: userId } });
   if (!user) throw new Error("User not found");
   if (user.role !== "CUSTOMER")
@@ -11,7 +16,7 @@ export const createClientChat = async (businessId: bigint, userId: bigint) => {
   const conversation = await prisma.conversation.create({
     data: {
       businessId: businessId,
-      type: "SUPPORT_ROOM",
+      type: conversationType,
     },
   });
 

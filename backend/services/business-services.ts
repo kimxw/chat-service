@@ -6,6 +6,6 @@ export const getBusiness = async (businessId: bigint) => {
   });
 };
 
-export const getAllBusiness = async() => {
+export const getAllBusiness = async () => {
   return await prisma.business.findMany();
 };

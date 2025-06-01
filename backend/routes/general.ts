@@ -129,13 +129,12 @@ export async function generalUserServicesRoutes(fastify: FastifyInstance) {
     }
   });
 
-   fastify.get("/getAllBusinesses", async (request, reply) => {
+  fastify.get("/getAllBusinesses", async (request, reply) => {
+    const businesses = await getAllBusiness();
 
-      const businesses = await getAllBusiness();
-  
-      return reply.send({
-        success: true,
-        businesses: serialiseBigInts(businesses),
-      });
+    return reply.send({
+      success: true,
+      businesses: serialiseBigInts(businesses),
     });
+  });
 }

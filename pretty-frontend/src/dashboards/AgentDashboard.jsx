@@ -13,6 +13,25 @@ export default function AgentDashboard() {
   const { sendMessage, lastMessage, userId, isWsConnected } =
     useContext(WebSocketContext); // Get the WebSocket tools
 
+  const [conversationType, setConversationType] = useState("");
+  const conversationOptions = [
+    { value: "DIRECT", label: "Direct" },
+    { value: "SUPPORT_ROOM", label: "Support Room" },
+    { value: "COMMUNITY", label: "Community" },
+  ];
+
+  const conversationTypeLabels = {
+    DIRECT: "Direct",
+    SUPPORT_ROOM: "Support Room",
+    COMMUNITY: "Community",
+  };
+
+  const conversationTypeClasses = {
+    DIRECT: "direct",
+    SUPPORT_ROOM: "support-room",
+    COMMUNITY: "community",
+  };
+
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
@@ -164,10 +183,12 @@ export default function AgentDashboard() {
                 }}
                 style={{ cursor: "pointer" }}
               >
-                <div className="conversation-type-badge">
-                  {conversation.type}
+                <div
+                  className={`conversation-type-badge ${conversationTypeClasses[conversation.type]}`}
+                >
+                  {conversationTypeLabels[conversation.type] ||
+                    conversation.type}
                 </div>
-
                 <p>Conversation Id: {conversation.id}</p>
                 <p className="business-name">{conversation.business.name}</p>
                 <p>

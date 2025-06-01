@@ -13,6 +13,24 @@ export default function CustomerDashboard() {
   const [conversations, setConversations] = useState([]);
   const [businessId, setBusinessId] = useState("");
   const [businesses, setBusinesses] = useState([]);
+  const [conversationType, setConversationType] = useState("");
+  const conversationOptions = [
+    { value: "DIRECT", label: "Direct" },
+    { value: "SUPPORT_ROOM", label: "Support Room" },
+    { value: "COMMUNITY", label: "Community" },
+  ];
+
+  const conversationTypeLabels = {
+    DIRECT: "Direct",
+    SUPPORT_ROOM: "Support Room",
+    COMMUNITY: "Community",
+  };
+
+  const conversationTypeClasses = {
+    DIRECT: "direct",
+    SUPPORT_ROOM: "support-room",
+    COMMUNITY: "community",
+  };
 
   const { lastMessage, userId, isWsConnected } = useWebSocket(); // Get WebSocket tools from context
   const navigate = useNavigate();
@@ -98,7 +116,10 @@ export default function CustomerDashboard() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ businessId: businessId.trim() }),
+        body: JSON.stringify({
+          businessId: businessId.trim(),
+          conversationType: conversationType,
+        }),
       });
       const data = await resp.json();
       if (!resp.ok) {
@@ -116,21 +137,21 @@ export default function CustomerDashboard() {
 
   useEffect(() => {
     const fetchBusinesses = async () => {
-        try {
+      try {
         const response = await fetch("http://localhost:3001/getAllBusinesses");
 
         const data = await response.json();
         console.log(data);
         if (data.success) {
-            setBusinesses(data.businesses);
+          setBusinesses(data.businesses);
         }
-        } catch (error) {
-            console.error("Error fetching businesses:", error);
-        }
-  };
+      } catch (error) {
+        console.error("Error fetching businesses:", error);
+      }
+    };
 
-  fetchBusinesses();
-}, []);
+    fetchBusinesses();
+  }, []);
 
   return (
     <div style={{ fontFamily: "Arial, sans-serif", margin: "2rem" }}>
@@ -146,26 +167,43 @@ export default function CustomerDashboard() {
 
       <div className="page-content">
         <h2>Conversations</h2>
-        <div style={{ paddingBottom: '10px' }}>
-        <form id="create-convo-form" onSubmit={handleCreateConversation}>
+        <div style={{ paddingBottom: "10px" }}>
+          <form id="create-convo-form" onSubmit={handleCreateConversation}>
             <select
-                value={businessId}
-                onChange={(e) => setBusinessId(e.target.value)}
-                required
-                style={{ marginRight: '10px' }}
+              value={businessId}
+              onChange={(e) => setBusinessId(e.target.value)}
+              required
+              style={{ marginRight: "10px" }}
             >
-                <option value="" disabled>Select a business</option>
-                {businesses.map((business) => (
+              <option value="" disabled>
+                Select a business
+              </option>
+              {businesses.map((business) => (
                 <option key={business.id} value={business.id}>
-                    {business.name} {/* or whatever field you want to show */}
+                  {business.name}
                 </option>
-                ))}
+              ))}
+            </select>
+
+            <select
+              value={conversationType}
+              onChange={(e) => setConversationType(e.target.value)}
+              required
+              style={{ marginRight: "10px" }}
+            >
+              <option value="" disabled>
+                Conversation Type
+              </option>
+              {conversationOptions.map((type) => (
+                <option key={type.value} value={type.value}>
+                  {type.label}
+                </option>
+              ))}
             </select>
 
             <button type="submit">Create Conversation</button>
-        </form>
+          </form>
         </div>
-
 
         <div id="results">
           {conversations.length === 0 ? (
@@ -194,8 +232,11 @@ export default function CustomerDashboard() {
                 }}
                 style={{ cursor: "pointer" }}
               >
-                <div className="conversation-type-badge">
-                  {conversation.type}
+                <div
+                  className={`conversation-type-badge ${conversationTypeClasses[conversation.type]}`}
+                >
+                  {conversationTypeLabels[conversation.type] ||
+                    conversation.type}
                 </div>
                 <p>Conversation Id: {conversation.id}</p>
                 <p
