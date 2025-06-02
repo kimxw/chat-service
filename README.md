@@ -1,3 +1,13 @@
+# ServiceHub Chat Service
+## Live Demo & Backend API
+
+- **Frontend:** [https://chat-service-hub.vercel.app](https://chat-service-hub.vercel.app)  
+  The main user interface hosted on Vercel.
+
+- **Backend API:** [https://chat-service-fey9.onrender.com](https://chat-service-fey9.onrender.com)  
+  The backend server providing API and WebSocket services.
+
+## Video Demo
 https://github.com/user-attachments/assets/5a162aa7-2769-49be-9929-c53b748d6ece
 
 # ServiceHub Chat Service Documentation
