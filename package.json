@@ -4,7 +4,7 @@
   "description": "Ceus Capital Technical Assessment",
   "main": "index.js",
   "scripts": {
-    "build": "echo \"No build step required\"",
+    "build": "npm install",
     "test": "cross-env NODE_ENV=test dotenv -e .env.test -- jest --runInBand --coverage",
     "listTestNames": "cross-env NODE_ENV=test dotenv -e .env.test -- jest --verbose",
     "format": "prettier --write \"**/*.ts\""
