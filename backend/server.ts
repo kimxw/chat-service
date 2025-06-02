@@ -16,8 +16,10 @@ dotenv.config();
 const fastify = Fastify();
 const wss = new WebSocketServer({ noServer: true });
 
+const allowedOrigin = process.env.CORS_ORIGIN || "http://localhost:3000"; //default to port 3000 if cannot fetch env var
+
 fastify.register(cors, {
-  origin: ["http://127.0.0.1:8080", "http://localhost:3000", "https://chat-service-hub.vercel.app"],
+  origin: ["http://localhost:3000", allowedOrigin],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 });
