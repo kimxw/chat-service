@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { BACKEND_URL } from "../constants";
 
 export default function RegisterCustomer() {
   const [form, setForm] = useState({
@@ -13,7 +14,7 @@ export default function RegisterCustomer() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resp = await fetch("http://localhost:3001/register", {
+    const resp = await fetch(`${BACKEND_URL}/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ ...form, role: "CUSTOMER" }),

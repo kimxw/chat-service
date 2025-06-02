@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { BACKEND_URL } from "../constants";
 
 export default function RegisterAgent() {
   const [form, setForm] = useState({
@@ -8,12 +9,13 @@ export default function RegisterAgent() {
     businessId: "",
   });
 
+
   const [businesses, setBusinesses] = useState([]);
 
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const response = await fetch("http://localhost:3001/getAllBusinesses");
+        const response = await fetch(`${BACKEND_URL}/getAllBusinesses`);
         const data = await response.json();
         if (data.success) {
           setBusinesses(data.businesses);
@@ -34,7 +36,7 @@ export default function RegisterAgent() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resp = await fetch("http://localhost:3001/register-agent", {
+    const resp = await fetch(`${BACKEND_URL}/register-agent`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(form),

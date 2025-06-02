@@ -1,11 +1,12 @@
 import React, { useState, useEffect } from "react";
+import { BACKEND_URL } from "../constants";
 
 export default function RegisterBusiness() {
   const [name, setName] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const resp = await fetch("http://localhost:3001/register-business", {
+    const resp = await fetch(`${BACKEND_URL}/register-business`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ name }),

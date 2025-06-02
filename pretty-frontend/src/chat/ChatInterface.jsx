@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from "react";
 import "./ChatInterface.css";
 import { useLocation } from "react-router-dom";
 import { useWebSocket } from "../WebSocketContext";
+import { BACKEND_URL } from "../constants";
 
 export default function ChatInterface() {
   const location = useLocation();
@@ -21,7 +22,7 @@ export default function ChatInterface() {
 
   const fetchOnlineUsers = async () => {
     try {
-      const res = await fetch(`http://localhost:3001/presence/online-users`);
+      const res = await fetch(`${BACKEND_URL}/presence/online-users`);
       if (!res.ok) throw new Error("Failed to fetch online users");
       const data = await res.json();
       console.log("Online users fetched:", data);
@@ -49,7 +50,7 @@ export default function ChatInterface() {
   const markAsReadByCustomer = async (conversationId, messageId) => {
     try {
       const res = await fetch(
-        `http://localhost:3001/conversations/${conversationId}/messages/${messageId}/read/customer`,
+        `${BACKEND_URL}/conversations/${conversationId}/messages/${messageId}/read/customer`,
         {
           method: "PATCH",
         },
@@ -69,7 +70,7 @@ export default function ChatInterface() {
   const markAsReadByAgent = async (conversationId, messageId) => {
     try {
       const res = await fetch(
-        `http://localhost:3001/conversations/${conversationId}/messages/${messageId}/read/agent`,
+        `${BACKEND_URL}/conversations/${conversationId}/messages/${messageId}/read/agent`,
         {
           method: "PATCH",
         },
@@ -89,7 +90,7 @@ export default function ChatInterface() {
   async function markAllAsRead(conversationId, role) {
     try {
       const response = await fetch(
-        `http://localhost:3001/conversations/${conversationId}/markAllAsRead/${role}`,
+        `${BACKEND_URL}/conversations/${conversationId}/markAllAsRead/${role}`,
         {
           method: "PATCH",
         },
@@ -113,7 +114,7 @@ export default function ChatInterface() {
     const fetchParticipants = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/conversations/${conversationId}/participants`,
+          `${BACKEND_URL}/conversations/${conversationId}/participants`,
         );
         if (!res.ok) throw new Error("Failed to fetch participants");
         const data = await res.json();
@@ -228,7 +229,7 @@ export default function ChatInterface() {
     const fetchMessages = async () => {
       try {
         const res = await fetch(
-          `http://localhost:3001/conversations/${conversationId.toString()}/messages`,
+          `${BACKEND_URL}/conversations/${conversationId.toString()}/messages`,
         );
 
         if (!res.ok) throw new Error("Failed to fetch messages");
@@ -258,7 +259,7 @@ export default function ChatInterface() {
 
     try {
       const response = await fetch(
-        `http://localhost:3001/conversations/${conversationId.toString()}/messages`,
+        `${BACKEND_URL}/conversations/${conversationId.toString()}/messages`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -297,7 +298,7 @@ export default function ChatInterface() {
     const sendTypingStatus = async (isTyping) => {
       try {
         await fetch(
-          `http://localhost:3001/conversations/${conversationId}/typing`,
+          `${BACKEND_URL}/conversations/${conversationId}/typing`,
           {
             method: "POST",
             headers: { "Content-Type": "application/json" },

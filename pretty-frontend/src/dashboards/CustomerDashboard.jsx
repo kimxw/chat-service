@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../App.css";
 import { useNavigate } from "react-router-dom";
 import { useWebSocket } from "../WebSocketContext"; // Import the context hook
+import { BACKEND_URL } from "../constants";
 
 export default function CustomerDashboard() {
   const [userInfo, setUserInfo] = useState({
@@ -41,7 +42,7 @@ export default function CustomerDashboard() {
       const token = localStorage.getItem("token");
       if (!token) return;
 
-      const resp = await fetch("http://localhost:3001/getClientChats", {
+      const resp = await fetch(`${BACKEND_URL}/getClientChats`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -65,7 +66,7 @@ export default function CustomerDashboard() {
 
     async function fetchUserDetails() {
       try {
-        const resp = await fetch("http://localhost:3001/getUserDetails", {
+        const resp = await fetch(`${BACKEND_URL}/getUserDetails`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resp.ok) {
@@ -110,7 +111,7 @@ export default function CustomerDashboard() {
     }
 
     try {
-      const resp = await fetch("http://localhost:3001/createClientChat", {
+      const resp = await fetch(`${BACKEND_URL}/createClientChat`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -138,7 +139,7 @@ export default function CustomerDashboard() {
   useEffect(() => {
     const fetchBusinesses = async () => {
       try {
-        const response = await fetch("http://localhost:3001/getAllBusinesses");
+        const response = await fetch(`${BACKEND_URL}/getAllBusinesses`);
 
         const data = await response.json();
         console.log(data);

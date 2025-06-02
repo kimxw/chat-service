@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { WebSocketContext } from "../WebSocketContext";
+import { BACKEND_URL } from "../constants";
 
 export default function AgentDashboard() {
   const [userInfo, setUserInfo] = useState({
@@ -37,7 +38,7 @@ export default function AgentDashboard() {
 
   async function deleteChatForAllUsers(conversationId) {
     try {
-      const resp = await fetch("http://localhost:3001/deleteChatForAll", {
+      const resp = await fetch(`${BACKEND_URL}/deleteChatForAll`, {
         method: "DELETE",
         headers: {
           "Content-Type": "application/json",
@@ -69,7 +70,7 @@ export default function AgentDashboard() {
 
     async function fetchUserDetails() {
       try {
-        const resp = await fetch("http://localhost:3001/getUserDetails", {
+        const resp = await fetch(`${BACKEND_URL}/getUserDetails`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resp.ok) {
@@ -91,7 +92,7 @@ export default function AgentDashboard() {
 
     async function fetchConversations() {
       try {
-        const resp = await fetch("http://localhost:3001/getAgentChats", {
+        const resp = await fetch(`${BACKEND_URL}/getAgentChats`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (resp.ok) {
@@ -117,7 +118,7 @@ export default function AgentDashboard() {
     if (lastMessage?.type === "REFRESH_CHATS") {
       async function refreshConversations() {
         try {
-          const resp = await fetch("http://localhost:3001/getAgentChats", {
+          const resp = await fetch(`${BACKEND_URL}/getAgentChats`, {
             headers: { Authorization: `Bearer ${token}` },
           });
           if (resp.ok) {

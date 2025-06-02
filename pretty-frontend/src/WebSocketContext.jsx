@@ -6,6 +6,7 @@ import React, {
   useRef,
 } from "react";
 import { jwtDecode } from "jwt-decode";
+import { WEBSOCKET_URL } from "./constants";
 
 const WebSocketContext = createContext();
 
@@ -37,7 +38,7 @@ export const WebSocketProvider = ({ children }) => {
     console.log("Establishing WebSocket for userId:", userId);
     const token = localStorage.getItem("token");
     const socket = new WebSocket(
-      `ws://localhost:3001/ws?token=${encodeURIComponent(token)}`,
+      `${WEBSOCKET_URL}/ws?token=${encodeURIComponent(token)}`,
     );
 
     socketRef.current = socket;

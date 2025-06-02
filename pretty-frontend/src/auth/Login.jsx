@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../App.css";
+import { BACKEND_URL } from "../constants";
 
 function parseJwt(token) {
   const base64Url = token.split(".")[1];
@@ -26,7 +27,7 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    const resp = await fetch("http://localhost:3001/login", {
+    const resp = await fetch(`${BACKEND_URL}/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ username, password }),
