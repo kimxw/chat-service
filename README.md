@@ -10,6 +10,126 @@
 ## Video Demo
 https://github.com/user-attachments/assets/5a162aa7-2769-49be-9929-c53b748d6ece
 
+# Chat-ServiHub Setup Instructions
+
+## Quick Start
+
+Follow these steps to get Chat-ServiHub up and running:
+
+### 1. Clone the Repository
+
+```bash
+git clone <url>
+cd chat-servihub
+```
+
+### 2. Environment Configuration
+
+#### Backend Environment Setup
+
+Copy the example environment file and configure your settings:
+
+```bash
+cp .env.example .env
+```
+
+Edit the `.env` file with your configuration:
+
+```env
+# Database connection string (PostgreSQL)
+DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database>
+
+# JWT secret key for authentication
+JWT_SECRET=your_jwt_secret_here
+
+# CORS origin allowed to access this API
+CORS_ORIGIN=http://localhost:5173
+```
+
+#### Test Environment Setup
+
+Copy the test environment file:
+
+```bash
+cp .env.test.example .env.test
+```
+
+Configure the `.env.test` file:
+
+```env
+# Database connection string (PostgreSQL)
+DATABASE_URL=postgresql://<username>:<password>@<host>:<port>/<database>
+
+# JWT secret key for authentication
+JWT_SECRET=your_jwt_secret_here
+```
+
+#### Frontend Environment Setup
+
+Navigate to the frontend directory and set up the environment:
+
+```bash
+cd pretty-frontend
+cp .env.example .env
+```
+
+Configure the `pretty-frontend/.env` file:
+
+```env
+# Backend url
+REACT_APP_BACKEND_URL=http://localhost:3001
+```
+
+### 3. Build and Run with Docker
+
+Return to the project root directory and start the application:
+
+```bash
+cd ..
+docker-compose up --build -d
+```
+
+This command will:
+- Build all necessary Docker images
+- Start the application in detached mode
+- Set up the database and backend services
+- Launch the frontend application
+
+### 4. Run Tests
+
+Verify everything is working correctly by running the test suite:
+
+```bash
+npm test
+```
+
+## Configuration Details
+
+### Database Configuration
+
+The `DATABASE_URL` should be formatted as:
+```
+postgresql://username:password@host:port/database_name
+```
+
+Example:
+```
+postgresql://myuser:mypassword@localhost:5432/chatservihub
+```
+
+### JWT Secret
+
+Generate a strong JWT secret for authentication. You can use:
+```bash
+node -e "console.log(require('crypto').randomBytes(64).toString('hex'))"
+```
+
+### CORS Configuration
+
+Set `CORS_ORIGIN` to match your frontend URL:
+- Development: `http://localhost:5173`
+- Production: Your production domain
+
 # ServiceHub Chat Service Documentation
 
 ## System Overview
