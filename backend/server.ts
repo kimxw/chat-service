@@ -107,10 +107,13 @@ function getPresenceSnapshot() {
   return snapshot;
 }
 
+fastify.get('/health', async () => ({ status: 'ok' }));
+
 // Start server
+console.log("Server starting...");
+
 fastify.listen({ port: 3001 }, (err, address) => {
   if (err) throw err;
   console.log(`Server listening at ${address}`);
 });
 
-fastify.get('/health', async () => ({ status: 'ok' }));
