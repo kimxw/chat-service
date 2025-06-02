@@ -11,15 +11,8 @@ export default function AgentDashboard() {
     business: "Loading...",
   });
   const [conversations, setConversations] = useState([]);
-  const { sendMessage, lastMessage, userId, isWsConnected } =
+  const { lastMessage, isWsConnected } =
     useContext(WebSocketContext); // Get the WebSocket tools
-
-  const [conversationType, setConversationType] = useState("");
-  const conversationOptions = [
-    { value: "DIRECT", label: "Direct" },
-    { value: "SUPPORT_ROOM", label: "Support Room" },
-    { value: "COMMUNITY", label: "Community" },
-  ];
 
   const conversationTypeLabels = {
     DIRECT: "Direct",

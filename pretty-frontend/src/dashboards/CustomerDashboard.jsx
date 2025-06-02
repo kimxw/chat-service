@@ -33,7 +33,7 @@ export default function CustomerDashboard() {
     COMMUNITY: "community",
   };
 
-  const { lastMessage, userId, isWsConnected } = useWebSocket(); // Get WebSocket tools from context
+  const { lastMessage, isWsConnected } = useWebSocket(); // Get WebSocket tools from context
   const navigate = useNavigate();
 
   // Helper to fetch conversations

@@ -12,7 +12,7 @@ export default function ChatInterface() {
   //   console.log(`currentUserId -> ${currentUserId}`)
   //   console.log(`conversationId -> ${conversationId}`)
 
-  const { ws, lastMessage } = useWebSocket();
+  const { lastMessage } = useWebSocket();
 
   const [onlineUsers, setOnlineUsers] = useState({}); // { userId: true/false }
   const [participants, setParticipants] = useState([]);
@@ -39,12 +39,7 @@ export default function ChatInterface() {
 
   useEffect(() => {
     fetchOnlineUsers();
-    console.log(onlineUsers);
-    console.log(onlineUsers);
-    console.log(onlineUsers);
-    console.log(onlineUsers);
-    console.log(onlineUsers);
-    console.log(onlineUsers);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const markAsReadByCustomer = async (conversationId, messageId) => {
@@ -252,7 +247,7 @@ export default function ChatInterface() {
 
     markAllAsRead(conversationId, currentRole);
     fetchMessages();
-  }, [conversationId]);
+  }, [conversationId, currentRole]);
 
   const handleSend = async () => {
     if (!input.trim()) return;
@@ -274,7 +269,6 @@ export default function ChatInterface() {
 
       if (!response.ok) throw new Error("Failed to send message");
 
-      const newMessage = await response.json();
       setInput("");
     } catch (err) {
       console.error(err);
