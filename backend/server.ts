@@ -112,8 +112,9 @@ fastify.get('/health', async () => ({ status: 'ok' }));
 // Start server
 console.log("Server starting...");
 
-fastify.listen({ port: 3001 }, (err, address) => {
+fastify.listen({ port: 3001, host: '0.0.0.0' }, (err, address) => {
   if (err) throw err;
   console.log(`Server listening at ${address}`);
 });
+
 
