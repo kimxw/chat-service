@@ -17,7 +17,7 @@ const fastify = Fastify();
 const wss = new WebSocketServer({ noServer: true });
 
 fastify.register(cors, {
-  origin: ["http://127.0.0.1:8080", "http://localhost:3000"],
+  origin: ["http://127.0.0.1:8080", "http://localhost:3000", "https://chat-service-hub.vercel.app"],
   methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
   credentials: true,
 });
@@ -112,3 +112,5 @@ fastify.listen({ port: 3001 }, (err, address) => {
   if (err) throw err;
   console.log(`Server listening at ${address}`);
 });
+
+fastify.get('/health', async () => ({ status: 'ok' }));
