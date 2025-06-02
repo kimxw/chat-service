@@ -126,7 +126,22 @@ WebSocket Events:
 - WebSocket authentication
 - CORS protection
 - Environment variable configuration
+  
+---
 
+## Known Issues
+- Using an internal connectedusers object and managing it manually instead of Redis pub/sub which is cleaner (?)/ might be more reliable
+- Race conditions in websocket connection vs page loading (leads to that pop-up on the dashboard that forces the page to reload)  
+- JWT tests use their own db via a url in `env.test` but it will be better to use mocks instead
+
+## Improvements
+- SSE Fallback
+- Attachment and other message types
+- Permission restriction for `Direct` conversationType (I was not sure what the requirements are exactly for this)
+- Use mocks for jest tests
+- More comprehensive/ fine grain error messages eg 'cannot allow duplicate usernames' instead of just returning `Bad Request`
+- Send email to offline users (wasn't sure which email to use but I assume it should be straightforward by doing 1 extra endpoint with integration with SendGrid/Mailgun/AWS SES
+  
 ---
 
 ## API Endpoints Summary
@@ -174,17 +189,10 @@ Request → CORS Check → JWT Validation → Route Handler → Business Logic �
 WebSocket Broadcasting ← Real-time Events ← Data Changes ←
 ```
 ## Arhitecture Diagram
-![image](https://github.com/user-attachments/assets/4f6fdecb-6390-47df-8fed-b9118687709b)
+![image](https://github.com/user-attachments/assets/9478628b-b1ca-45b0-baec-87c00b0ab69a)
+
 ## Schema (from prismaliser)
 ![prismaliser](https://github.com/user-attachments/assets/419a0ef5-ac80-465b-8026-92ce9953699d)
-
-
-**Key Components:**
-1. **Fastify Server** - HTTP request handling and routing
-2. **WebSocket Server** - Real-time communication layer  
-3. **Prisma ORM** - Database abstraction and operations
-4. **JWT Middleware** - Authentication and authorization
-5. **Broadcasting System** - Real-time event distribution
 
 # Testing and Coverage
 
