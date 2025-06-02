@@ -1,19 +1,191 @@
-# chat-service
-### New Frontend
-**CUSTOMER DASHBOARD**
-![image](https://github.com/user-attachments/assets/bb0eab9f-adc9-4e86-a200-8a0e5fde1a78)
+https://github.com/user-attachments/assets/5a162aa7-2769-49be-9929-c53b748d6ece
 
-**AGENT DASHBOARD**
-![image](https://github.com/user-attachments/assets/d1cbb47e-f398-48bc-9745-b3b542f2a684)
+# ServiceHub Chat Service Documentation
 
-**CHAT INTERFACE**
-![image](https://github.com/user-attachments/assets/0c5244b2-10f9-4d74-b231-d93a94468562)
+## System Overview
 
-# Arhitecture Diagram
+**Tech Stack:**
+- Backend: Fastify (Node.js)
+- Database: Prisma ORM
+- Authentication: JWT tokens (with time sensitive token expiry)
+- Real-time: WebSocket connections
+- Security: bcrypt password hashing, CORS configuration
+
+**User Roles:**
+- **CUSTOMER**: End users seeking support -> can create conversations
+- **AGENT**: Business representatives providing support -> can view all conversations directed to their business
+- **BUSINESS**: Service provider entities
+
+---
+
+## Core Workflow
+
+### 1. User Registration & Authentication
+
+```
+Registration Options:
+├── POST /register → General user registration
+├── POST /register-business → Create business entity
+└── POST /register-agent → Create agent linked to business
+
+Authentication Flow:
+1. POST /login with username/password
+2. Server validates credentials
+3. JWT token generated and returned
+4. Token included in Authorization header for protected routes
+```
+
+### 2. Chat Creation Flow
+
+```
+Client Side:
+1. Client views available businesses (GET /getAllBusinesses)
+2. Client creates chat with business (POST /createClientChat)
+3. System creates conversation and adds participants
+4. Real-time notification sent to all agents
+
+Agent Side:
+1. Agent receives notification via WebSocket
+2. Agent views all business chats (GET /getAgentChats)
+3. Agent can delete conversations (DELETE /deleteChatForAll)
+```
+
+### 3. Messaging Workflow
+
+```
+Message Flow:
+1. User sends message (POST /conversations/:id/messages)
+2. System validates user is participant
+3. Message stored in database
+4. Real-time broadcast to all conversation participants
+5. Read status tracking updated
+```
+
+### 4. Real-time Communication
+
+```
+WebSocket Connection:
+1. Client connects with JWT token (ws://localhost:3001?token=<jwt>)
+2. Server validates token and adds user to connected users
+3. Welcome message and presence snapshot sent
+4. Real-time events broadcast to relevant users
+
+WebSocket Events:
+├── Connection Events (WELCOME, PRESENCE_SNAPSHOT, PRESENCE_UPDATE)
+├── Message Events (NEW_MESSAGE_BY_CUSTOMER, NEW_MESSAGE_BY_AGENT)
+├── Status Events (UPDATED_READ_STATUS_OF_CUSTOMER, UPDATED_READ_STATUS_OF_AGENTS)
+├── Chat Events (REFRESH_CHATS, TYPING)
+└── Presence Events (user online/offline status)
+```
+
+---
+
+## Feature List
+
+### Authentication & User Management
+-  JWT-based authentication with time sensitive token expiry
+- User registration with role-based access control
+- Business entity registration and management
+- Agent registration with business association
+- Password encryption using bcrypt
+- User profile retrieval with business information protected by jwt
+
+### Chat & Conversation Management
+- Multi-type conversation support (SUPPORT, SALES, GENERAL)
+- Client-initiated chat creation with businesses
+- Automatic participant management
+- Agent access to all business conversations
+- Conversation deletion (agent-only)
+- Participant listing and management
+
+### Messaging System
+- Message persistence and retrieval
+- Multi-format message support (text, files, images, videos) extension possible (currently only text)
+- Sender information inclusion and datetime metadata
+- Dual read status tracking (customer/agent) and  `delivered` vs `read` display
+- Bulk message read status updates
+
+### Real-time Features
+- WebSocket-based live communication
+- JWT-authenticated WebSocket connections
+- Real-time message broadcasting
+- Live user presence tracking (`Online` vs `Offline`)
+- Typing indicators (including for multiple concurrent typers
+- Read receipt notifications real-time
+- Connection state management
+- Automatic cleanup on disconnect
+
+### API & Integration
+- RESTful API with exposed endpoints
+- Health check endpoint
+
+### Security Features
+- JWT token validation for all protected routes
+- Role-based authorization
+- Secure password storage
+- WebSocket authentication
+- CORS protection
+- Environment variable configuration
+
+---
+
+## API Endpoints Summary
+
+### Authentication
+- `POST /login` - User authentication
+- `GET /getUserDetails` - Get user profile
+
+### Registration
+- `POST /register` - General user registration
+- `POST /register-business` - Business registration
+- `POST /register-agent` - Agent registration
+
+### Chat Management
+- `GET /getClientChats` - Client's conversations
+- `POST /createClientChat` - Create new chat
+- `GET /getAgentChats` - Agent's conversations
+- `DELETE /deleteChatForAll` - Delete conversation
+
+### Messaging
+- `GET /conversations/:id/messages` - Get conversation messages
+- `POST /conversations/:id/messages` - Send message
+- `PATCH /conversations/:id/messages/:messageId/read/customer` - Mark read by customer
+- `PATCH /conversations/:id/messages/:messageId/read/agent` - Mark read by agent
+- `GET /messages/:messageId` - Get specific message
+
+### Utilities
+- `GET /health` - Health check
+- `GET /presence/online-users` - Online users list
+- `GET /getAllBusinesses` - Business directory
+- `POST /conversations/:id/typing` - Typing indicators
+- `PATCH /conversations/:id/markAllAsRead/:role` - Bulk read status update
+- `GET /conversations/:id/participants` - Conversation participants
+
+### WebSocket
+- `ws://localhost:3001?token=<jwt>` - Real-time communication
+
+---
+
+## Data Flow Architecture
+
+```
+Request → CORS Check → JWT Validation → Route Handler → Business Logic → Database (Prisma) → Response
+                                                            ↓
+WebSocket Broadcasting ← Real-time Events ← Data Changes ←
+```
+## Arhitecture Diagram
 ![image](https://github.com/user-attachments/assets/4f6fdecb-6390-47df-8fed-b9118687709b)
-
-# Schema
+## Schema (from prismaliser)
 ![prismaliser](https://github.com/user-attachments/assets/419a0ef5-ac80-465b-8026-92ce9953699d)
 
-# Test status so far
+
+**Key Components:**
+1. **Fastify Server** - HTTP request handling and routing
+2. **WebSocket Server** - Real-time communication layer  
+3. **Prisma ORM** - Database abstraction and operations
+4. **JWT Middleware** - Authentication and authorization
+5. **Broadcasting System** - Real-time event distribution
+
+# Testing and Coverage
+
 ![image](https://github.com/user-attachments/assets/a27ba511-38b5-4969-84f4-9acf93cc8369)
