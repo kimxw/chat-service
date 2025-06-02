@@ -197,3 +197,49 @@ WebSocket Broadcasting ← Real-time Events ← Data Changes ←
 # Testing and Coverage
 
 ![image](https://github.com/user-attachments/assets/a27ba511-38b5-4969-84f4-9acf93cc8369)
+
+## Auth Endpoints Tests
+- Should return 401 on invalid login
+- Should login successfully and return JWT
+- Should return user details for a valid user
+- Should return 404 if user does not exist
+
+## Register Endpoints Tests
+- Should register a new user successfully
+- Should not register with duplicate username
+- Should not register an agent with a non-existing business ID
+- Should register a business
+- Should register an agent linked to an existing business
+
+## Agent Chats API Tests
+- Should return the agent's participant list when chats exist
+- Should return an empty list if the agent has no chats
+- Deletes chat for all participants and returns success
+
+## Client Chats API Tests
+- Should create a participant (and conversation) for a valid client and business
+- Should return 400 for missing businessId
+- Should return 400 for missing conversationType
+- Should return 400 for non-existing businessId
+- Should return the participant list when chats exist
+
+## General User Services Routes Tests
+- GET /presence/online-users returns empty initially
+- GET /conversations/:id/participants returns all participants
+- PATCH /conversations/:id/markAllAsRead/AGENT marks unread messages as read by agents
+- PATCH /conversations/:id/markAllAsRead/CUSTOMER marks unread messages as read by customer
+- POST /conversations/:id/typing returns success even if no sockets are connected
+- GET /getAllBusinesses returns the test business
+
+## Message Routes Tests
+- GET /conversations/:id/messages
+   - Returns 200 and messages if conversation exists
+   - Returns 404 if conversation does not exist
+- POST /conversations/:id/messages
+   - Creates a new message and returns 201
+   - Returns 400 if no content provided
+- PATCH /conversations/:cid/messages/:mid/read/customer
+   - Marks message as read and returns updated message
+- GET /messages/:id
+   - Returns message by ID
+   - Returns 404 if message not found
