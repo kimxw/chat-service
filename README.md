@@ -1,4 +1,4 @@
-# ServiceHub Chat Service
+# Ceus Capital Technical Assessment - Chat Service
 ## Live Demo & Backend API
 
 - **Frontend:** [https://chat-service-hub.vercel.app](https://chat-service-hub.vercel.app)  
@@ -10,7 +10,7 @@
 ## Video Demo
 https://github.com/user-attachments/assets/5a162aa7-2769-49be-9929-c53b748d6ece
 
-# Chat-ServiHub Setup Instructions
+# Chat Setup Instructions
 
 ## Quick Start
 
